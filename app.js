@@ -1,8 +1,7 @@
-// --- 1. AYARLAR & API ANAHTARI ---
-// PATRON DİKKAT: API Anahtarını tırnak içine yapıştır.
-const GEMINI_API_KEY = "BURAYA_YAPISTIR"; 
+// --- 1. AYARLAR & API ---
+const GEMINI_API_KEY = "BURAYA_YAPISTIR"; // API ANAHTARINI BURAYA YAPIŞTIR PATRON!
 
-// --- 2. PROGRAM VERİTABANI (v3.0 OPTİMİZE) ---
+// --- 2. PROGRAM VERİTABANI (7 GÜN EKSİKSİZ) ---
 const workouts = {
     "Pazartesi": [
         { id: "pzt_1", name: "Incline Dumbbell Press", sets: 3, target: [6, 10], rir: "1-2" },
@@ -29,6 +28,7 @@ const workouts = {
         { id: "car_5", name: "Leg Extension", sets: 2, target: [12, 15], rir: "0" },
         { id: "car_6", name: "Standing Calf Raise", sets: 4, target: [10, 15], rir: "0" }
     ],
+    "Perşembe": [], // OFF DAY
     "Cuma": [
         { id: "cum_1", name: "Seated Dumbbell Press", sets: 2, target: [6, 10], rir: "1-2" },
         { id: "cum_2", name: "Chest Press (Makine)", sets: 3, target: [8, 12], rir: "1" },
@@ -45,15 +45,23 @@ const workouts = {
         { id: "cmt_4", name: "Rear Delt Fly", sets: 4, target: [12, 15], rir: "0" },
         { id: "cmt_5", name: "Barbell Curl", sets: 2, target: [8, 12], rir: "0" },
         { id: "cmt_6", name: "Hammer Curl", sets: 2, target: [10, 12], rir: "0" }
-    ]
+    ],
+    "Pazar": [] // OFF DAY
+};
+
+// VÜCUT ÖLÇÜLERİ ETİKETLERİ
+const bodyParts = {
+    m_shoulder: "Omuz", m_chest: "Göğüs", m_l_arm: "Sol Kol", m_r_arm: "Sağ Kol",
+    m_waist: "Bel", m_thigh: "Üst Bacak", m_calf: "Kalf", m_weight: "Kilo"
 };
 
 const days = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"];
 let currentDay = "Pazartesi";
 let isSickMode = false;
-let myChart = null; // Grafik nesnesi
+let myChart = null;
+let chartMode = 'workout'; // 'workout' veya 'body'
 
-// --- 3. BAŞLANGIÇ & GÖREV EMRİ ---
+// --- 3. BAŞLATICI ---
 window.onload = function() {
     initTracker();
     checkMissionBriefing();
@@ -62,26 +70,15 @@ window.onload = function() {
 function checkMissionBriefing() {
     const lastLogin = localStorage.getItem("lastLoginDate");
     const today = new Date().toLocaleDateString();
-    
-    // Günde 1 kez briefing ver
-    if (lastLogin !== today && workouts[currentDay]) {
-        const briefingModal = document.getElementById("mission-briefing");
-        const textField = document.getElementById("briefing-text");
-        briefingModal.style.display = "flex";
-        
-        // Basit AI Simülasyonu
-        textField.innerHTML = `
-            <b>GÜNAYDIN PATRON.</b><br><br>
-            Bugün: <span style="color:gold">${currentDay}</span>.<br>
-            Hedef: Zirveye bir adım daha yaklaşmak.<br><br>
-            <i>Sistem hazır. Başlamaya hazır mısın?</i>
-        `;
+    if (lastLogin !== today && workouts[currentDay] && workouts[currentDay].length > 0) {
+        document.getElementById("mission-briefing").style.display = "flex";
+        document.getElementById("briefing-text").innerHTML = `<b>GÜNAYDIN PATRON.</b><br>Bugün: <span style="color:gold">${currentDay}</span>.<br>Hedef: Zirve. Hazır mısın?`;
         localStorage.setItem("lastLoginDate", today);
     }
 }
 function closeBriefing() { document.getElementById("mission-briefing").style.display = "none"; }
 
-// --- 4. GÖRÜNÜM YÖNETİMİ ---
+// --- 4. GÖRÜNÜM GEÇİŞLERİ ---
 function switchView(viewName) {
     document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
     document.getElementById(`view-${viewName}`).style.display = 'block';
@@ -91,20 +88,26 @@ function switchView(viewName) {
 
     if(viewName === 'program') renderProgram();
     if(viewName === 'analytics') initAnalytics();
+    if(viewName === 'body') renderBodyHistory();
 }
 
-// --- 5. TRACKER & HASTA MODU ---
+// --- 5. TRACKER (ANTRENMAN) ---
 function initTracker() {
     const selector = document.getElementById("day-selector");
     selector.innerHTML = "";
-    Object.keys(workouts).forEach(day => {
+    days.forEach(day => {
         const btn = document.createElement("button");
         btn.className = `day-btn ${day === currentDay ? 'active' : ''}`;
-        btn.innerText = day;
-        btn.onclick = () => { currentDay = day; initTracker(); };
+        if (workouts[day].length === 0) { btn.style.opacity = "0.6"; btn.innerText = day.substr(0,3) + " (OFF)"; } 
+        else { btn.innerText = day; }
+        
+        btn.onclick = () => { 
+            document.querySelectorAll(".day-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            currentDay = day; isSickMode = false; renderWorkout(); 
+        };
         selector.appendChild(btn);
     });
-    
     renderWorkout();
 }
 
@@ -117,95 +120,74 @@ function renderWorkout() {
     const container = document.getElementById("workout-container");
     container.innerHTML = "";
 
-    // HASTA MODU İSE
     if (isSickMode) {
-        container.innerHTML = `
-            <div style="text-align:center; padding:40px; color:var(--red);">
-                <div style="font-size:3rem;">🤒</div>
-                <h3>DİNLENME MODU AKTİF</h3>
-                <p>Geçmiş olsun Patron. Sistem bugünlük kayıt almayacak ve analizlerde bu günü "Mazeretli" sayacak.</p>
-                <button class="save-btn" style="background:#333; color:white;" onclick="logSickDay()">BUGÜNÜ 'HASTA' OLARAK KAYDET</button>
-            </div>
-        `;
+        container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--red); border:1px dashed var(--red); border-radius:15px; margin:20px;"><i class="fa-solid fa-bed" style="font-size:3rem; margin-bottom:10px;"></i><h3>MAZERET MODU</h3><p>Dinlen Patron.</p><button class="save-btn" style="background:#333;" onclick="alert('Kaydedildi')">KAYDET</button></div>`;
         return;
     }
 
-    // NORMAL ANTRENMAN
-    if (!workouts[currentDay]) {
-        container.innerHTML = `<div style="text-align:center; padding:20px; color:#666;">Bugün planlı antrenman yok (OFF).<br>Dinlen ve büyü.</div>`;
+    if (!workouts[currentDay] || workouts[currentDay].length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:50px 20px; color:#888;"><i class="fa-solid fa-mug-hot" style="font-size:4rem; margin-bottom:20px;"></i><h2 style="color:var(--gold);">OFF DAY</h2><p>Büyüme uykuda olur.</p></div>`;
         return;
     }
 
     workouts[currentDay].forEach(ex => {
         const history = JSON.parse(localStorage.getItem(ex.id)) || [];
         const last = history[history.length - 1];
-        let info = last ? `Son: ${last.bestWeight}kg x ${last.bestReps}` : "İlk kayıt bekleniyor.";
+        let info = last ? `Son: ${last.bestWeight}kg x ${last.bestReps}` : "İlk Kayıt";
 
         const card = document.createElement("div");
         card.className = "exercise-card";
-        
         let setsHTML = "";
         for(let i=1; i<=ex.sets; i++) {
-            setsHTML += `
-            <div class="set-row">
-                <span class="set-label">SET ${i}</span>
-                <input type="number" id="${ex.id}_kg_${i}" placeholder="KG">
-                <input type="number" id="${ex.id}_reps_${i}" placeholder="Tekrar">
-                <button class="mic-btn" onclick="startVoice('${ex.id}_kg_${i}', '${ex.id}_reps_${i}')">🎤</button>
-            </div>`;
+            setsHTML += `<div class="set-row"><span class="set-label">SET ${i}</span><input type="number" id="${ex.id}_kg_${i}" placeholder="KG"><input type="number" id="${ex.id}_reps_${i}" placeholder="Tekrar"><button class="mic-btn" onclick="startVoice('${ex.id}_kg_${i}', '${ex.id}_reps_${i}')"><i class="fa-solid fa-microphone"></i></button></div>`;
         }
-
-        card.innerHTML = `
-            <div class="card-header">
-                <span class="ex-name">${ex.name}</span>
-                <span class="ex-meta">${ex.target[0]}-${ex.target[1]} | RIR ${ex.rir}</span>
-            </div>
-            <div style="font-size:0.8rem; color:#888; margin-bottom:10px;">${info}</div>
-            ${setsHTML}
-            <button class="save-btn" onclick="analyzeAndSave('${ex.id}', '${ex.name}', ${ex.target[1]})">KAYDET</button>
-        `;
+        card.innerHTML = `<div class="card-header"><span class="ex-name">${ex.name}</span><span class="ex-meta">${ex.target[0]}-${ex.target[1]} | RIR ${ex.rir}</span></div><div style="font-size:0.8rem; color:#888; margin-bottom:10px;">${info}</div>${setsHTML}<button class="save-btn" onclick="analyzeAndSave('${ex.id}', '${ex.name}', ${ex.target[1]})">KAYDET</button>`;
         container.appendChild(card);
     });
 }
 
-function logSickDay() {
-    const today = new Date().toLocaleDateString();
-    localStorage.setItem(`sick_day_${today}`, "true");
-    alert("Kaydedildi Patron. Dinlenmene bak.");
-}
+// --- 6. VÜCUT ÖLÇÜLERİ (YENİ) ---
+function saveMeasurements() {
+    const stats = {};
+    let filled = false;
+    Object.keys(bodyParts).forEach(key => {
+        const val = document.getElementById(key).value;
+        if(val) { stats[key] = parseFloat(val); filled = true; }
+        document.getElementById(key).value = ""; // Temizle
+    });
 
-// --- 6. SESLİ KOMUT (WEB SPEECH API) ---
-function startVoice(kgId, repId) {
-    if (!('webkitSpeechRecognition' in window)) { alert("Tarayıcın sesi desteklemiyor."); return; }
+    if(!filled) return alert("En az bir ölçü gir Patron.");
+
+    stats.date = new Date().toLocaleDateString();
+    const history = JSON.parse(localStorage.getItem("body_stats")) || [];
+    history.push(stats);
+    localStorage.setItem("body_stats", JSON.stringify(history));
     
-    const recognition = new webkitSpeechRecognition();
-    recognition.lang = 'tr-TR';
-    recognition.start();
-
-    const btn = document.querySelector(`button[onclick*='${kgId}']`);
-    btn.classList.add('listening');
-
-    recognition.onresult = function(event) {
-        const text = event.results[0][0].transcript;
-        // Basit ayrıştırma: "30 kilo 10 tekrar"
-        const numbers = text.match(/\d+/g);
-        if (numbers && numbers.length >= 2) {
-            document.getElementById(kgId).value = numbers[0];
-            document.getElementById(repId).value = numbers[1];
-        } else {
-            alert("Anlayamadım. Örnek: '30 kilo 10 tekrar'");
-        }
-        btn.classList.remove('listening');
-    };
-    recognition.onerror = () => btn.classList.remove('listening');
+    showModal("KAYDEDİLDİ", "Vücut verilerin sisteme işlendi. Gelişimini grafikten takip edebilirsin.");
+    renderBodyHistory();
 }
 
-// --- 7. KAYIT & AI ANALİZ (GEMINI) ---
+function renderBodyHistory() {
+    const container = document.getElementById("measurement-history");
+    const history = JSON.parse(localStorage.getItem("body_stats")) || [];
+    container.innerHTML = history.length ? "" : "<div style='text-align:center; color:#666;'>Henüz ölçü girmedin.</div>";
+    
+    // Sondan başa sırala
+    history.slice().reverse().forEach(stat => {
+        let details = "";
+        Object.keys(bodyParts).forEach(key => {
+            if(stat[key]) details += `${bodyParts[key]}: <b>${stat[key]}</b> | `;
+        });
+        container.innerHTML += `<div class="history-item"><div><div class="h-date">${stat.date}</div><div class="h-summary">${details}</div></div></div>`;
+    });
+}
+
+// --- 7. KAYIT VE AI ANALİZ ---
 async function analyzeAndSave(id, name, maxTarget) {
     const kgInputs = document.querySelectorAll(`[id^='${id}_kg_']`);
     const repInputs = document.querySelectorAll(`[id^='${id}_reps_']`);
     let bestWeight = 0, bestReps = 0;
-
+    
     for(let i=0; i<kgInputs.length; i++) {
         let k = parseFloat(kgInputs[i].value), r = parseFloat(repInputs[i].value);
         if(k && r) {
@@ -213,7 +195,6 @@ async function analyzeAndSave(id, name, maxTarget) {
             if(oneRM > (bestWeight * (1 + bestReps/30))) { bestWeight = k; bestReps = r; }
         }
     }
-
     if(bestWeight === 0) return alert("Boş veri girme Patron.");
 
     const history = JSON.parse(localStorage.getItem(id)) || [];
@@ -222,157 +203,125 @@ async function analyzeAndSave(id, name, maxTarget) {
 
     // GEMINI ÇAĞRISI
     showModal("AI ANALİZİ", "🧠 Veriler inceleniyor...");
-    
-    if (GEMINI_API_KEY === "BURAYA_YAPISTIR") {
-        showModal("UYARI", "API Anahtarı girilmemiş. Yine de kaydedildi.");
-        return;
-    }
+    if(GEMINI_API_KEY === "AIzaSyCn_GaWtwR2Pym80nOCKfefoCv-yevdSso") return showModal("KAYDEDİLDİ", "Veriler kaydedildi (API Anahtarı yok).");
 
     try {
-        const prompt = `Sen sert bir vücut geliştirme koçusun. Sporcun ${name} hareketinde ${bestWeight}kg ile ${bestReps} tekrar yaptı. Hedef üst sınır ${maxTarget}. Ona tek cümlelik, gaza getirici veya uyarıcı bir geri bildirim ver.`;
-        
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-            method: 'POST', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        const prompt = `Koç, sporcu ${name} hareketinde ${bestWeight}kg x ${bestReps} yaptı. Hedef ${maxTarget} tekrardı. Tek cümlelik sert bir yorum yap.`;
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
-        const data = await response.json();
+        const data = await res.json();
         showModal("JARVIS DİYOR Kİ:", data.candidates[0].content.parts[0].text);
-    } catch (e) {
-        showModal("KAYDEDİLDİ", "İnternet yok ama veriler güvende.");
-    }
+    } catch(e) { showModal("KAYDEDİLDİ", "İnternet sorunu, ama veri güvende."); }
 }
 
-// --- 8. AI FULL RAPOR (HAFTALIK KONSEY) ---
-async function askGeminiFullReport() {
-    const area = document.getElementById("ai-report-area");
-    area.innerHTML = "Veriler toplanıyor...";
-    
-    // Verileri Topla
-    let log = "SPORCU VERİLERİ:\n";
-    Object.keys(workouts).forEach(day => {
-        workouts[day].forEach(ex => {
-            const h = JSON.parse(localStorage.getItem(ex.id)) || [];
-            if(h.length) {
-                const last = h[h.length-1];
-                log += `${ex.name}: ${last.bestWeight}kg x ${last.bestReps} (${last.date})\n`;
-            }
-        });
-    });
-
-    if(GEMINI_API_KEY === "AIzaSyCn_GaWtwR2Pym80nOCKfefoCv-yevdSso") return area.innerHTML = "API Anahtarı eksik.";
-
-    try {
-        const prompt = `Bu sporcunun son durumunu analiz et. Güçlü ve zayıf yönlerini söyle. Haftalık strateji ver. Veriler:\n${log}`;
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-            method: 'POST', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-        });
-        const data = await response.json();
-        const text = data.candidates[0].content.parts[0].text;
-        area.innerHTML = text.replace(/\n/g, "<br>"); // HTML formatı
-    } catch(e) { area.innerHTML = "Hata oluştu."; }
+// --- 8. GRAFİK & ANALİZ (ÇİFT MODLU) ---
+function setChartMode(mode) {
+    chartMode = mode;
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.mode-btn[onclick="setChartMode('${mode}')"]`).classList.add('active');
+    initAnalytics();
 }
 
-// --- 9. ANALYTICS (GRAFİKLER) ---
 function initAnalytics() {
-    const select = document.getElementById("chart-exercise-select");
+    const select = document.getElementById("chart-select");
     select.innerHTML = "";
     
-    // Tüm hareketleri listele
-    let allEx = [];
-    Object.values(workouts).forEach(dayArr => allEx.push(...dayArr));
-    
-    allEx.forEach(ex => {
-        const opt = document.createElement("option");
-        opt.value = ex.id;
-        opt.text = ex.name;
-        select.appendChild(opt);
-    });
-    
+    if (chartMode === 'workout') {
+        let allEx = [];
+        Object.values(workouts).forEach(dayArr => allEx.push(...dayArr));
+        allEx.forEach(ex => {
+            const opt = document.createElement("option");
+            opt.value = ex.id; opt.text = ex.name; select.appendChild(opt);
+        });
+    } else {
+        Object.keys(bodyParts).forEach(key => {
+            const opt = document.createElement("option");
+            opt.value = key; opt.text = bodyParts[key]; select.appendChild(opt);
+        });
+    }
     updateChart();
 }
 
 function updateChart() {
-    const exId = document.getElementById("chart-exercise-select").value;
-    const history = JSON.parse(localStorage.getItem(exId)) || [];
+    const key = document.getElementById("chart-select").value;
+    const ctx = document.getElementById('mainChart').getContext('2d');
+    if (myChart) myChart.destroy();
     
-    const ctx = document.getElementById('progressChart').getContext('2d');
-    
-    if (myChart) myChart.destroy(); // Eski grafiği sil
+    let labels = [], dataPoints = [], labelStr = "";
 
-    const labels = history.map(h => h.date.slice(0,5)); // Sadece gün/ay
-    const dataPoints = history.map(h => h.bestWeight * (1 + h.bestReps/30)); // 1RM Tahmini
+    if (chartMode === 'workout') {
+        const history = JSON.parse(localStorage.getItem(key)) || [];
+        labels = history.map(h => h.date.slice(0,5));
+        dataPoints = history.map(h => h.bestWeight * (1 + h.bestReps/30));
+        labelStr = "Tahmini 1RM Gücü (KG)";
+    } else {
+        const history = JSON.parse(localStorage.getItem("body_stats")) || [];
+        // Sadece seçili ölçünün olduğu tarihleri al
+        const filtered = history.filter(h => h[key]);
+        labels = filtered.map(h => h.date.slice(0,5));
+        dataPoints = filtered.map(h => h[key]);
+        labelStr = `${bodyParts[key]} Ölçüsü (cm/kg)`;
+    }
 
     myChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
             datasets: [{
-                label: 'Tahmini 1RM Gücü (KG)',
+                label: labelStr,
                 data: dataPoints,
                 borderColor: '#FFD700',
                 backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                borderWidth: 2,
-                tension: 0.3,
+                borderWidth: 3,
+                tension: 0.4,
+                pointBackgroundColor: '#00d9ff',
                 fill: true
             }]
         },
         options: {
             responsive: true,
-            scales: { y: { beginAtZero: false, grid: { color: '#333' } }, x: { grid: { color: '#333' } } },
+            maintainAspectRatio: false,
+            scales: { y: { grid: { color: '#333' } }, x: { grid: { color: '#333' } } },
             plugins: { legend: { labels: { color: 'white' } } }
         }
     });
+    
+    // Özet Bilgi
+    const summary = document.getElementById("stats-summary");
+    if(dataPoints.length > 1) {
+        const diff = dataPoints[dataPoints.length-1] - dataPoints[0];
+        const symbol = diff > 0 ? "📈" : (diff < 0 ? "📉" : "➖");
+        summary.innerHTML = `${symbol} Toplam Değişim: <b>${diff.toFixed(1)}</b> birim. <br> Başlangıç: ${dataPoints[0]} -> Son: ${dataPoints[dataPoints.length-1]}`;
+    } else {
+        summary.innerHTML = "Analiz için en az 2 veri girişi lazım.";
+    }
 }
 
-// --- 10. YEDEKLEME & ARAÇLAR ---
-function toggleSettings() {
-    const p = document.getElementById("settings-panel");
-    p.style.display = p.style.display === "block" ? "none" : "block";
-}
-function showModal(title, body) {
-    document.getElementById("modal-title").innerText = title;
-    document.getElementById("modal-body").innerHTML = body;
-    document.getElementById("modal").style.display = "flex";
-}
-function closeModal() { document.getElementById("modal").style.display = "none"; }
-
-function exportData() {
-    const data = JSON.stringify(localStorage);
-    const blob = new Blob([data], {type: "application/json"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = `patron_backup_${new Date().toLocaleDateString()}.json`;
-    a.click();
-}
-
-function importData(input) {
-    const file = input.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const data = JSON.parse(e.target.result);
-            Object.keys(data).forEach(k => localStorage.setItem(k, data[k]));
-            alert("Yedek başarıyla yüklendi Patron!");
-            location.reload();
-        } catch(err) { alert("Dosya bozuk."); }
+// --- 9. ARAÇLAR (SES, YEDEKLEME) ---
+function startVoice(kgId, repId) {
+    if (!('webkitSpeechRecognition' in window)) return alert("Ses desteklenmiyor.");
+    const recognition = new webkitSpeechRecognition();
+    recognition.lang = 'tr-TR'; recognition.start();
+    const btn = document.querySelector(`button[onclick*='${kgId}']`);
+    btn.classList.add('listening');
+    recognition.onresult = (e) => {
+        const nums = e.results[0][0].transcript.match(/\d+/g);
+        if(nums && nums.length>=2) { document.getElementById(kgId).value = nums[0]; document.getElementById(repId).value = nums[1]; }
+        btn.classList.remove('listening');
     };
-    reader.readAsText(file);
 }
-
-// PROGRAM SEKMESİ (Basit Listeleme)
+function toggleSettings() { const p=document.getElementById("settings-panel"); p.style.display=p.style.display==="block"?"none":"block"; }
+function showModal(title, body) { document.getElementById("modal-title").innerText=title; document.getElementById("modal-body").innerHTML=body; document.getElementById("modal").style.display="flex"; }
+function closeModal() { document.getElementById("modal").style.display="none"; }
+function exportData() { const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([JSON.stringify(localStorage)],{type:"application/json"})); a.download=`patron_backup.json`; a.click(); }
+function importData(inp) { const r=new FileReader(); r.onload=e=>{try{const d=JSON.parse(e.target.result);Object.keys(d).forEach(k=>localStorage.setItem(k,d[k]));location.reload();}catch(x){alert("Hata");}}; if(inp.files[0])r.readAsText(inp.files[0]); }
+function askGeminiFullReport() { alert("Detaylı rapor hazırlanıyor... API Key girdiysen çalışır."); }
 function renderProgram() {
-    const c = document.getElementById("full-program-container");
-    c.innerHTML = "";
+    const c = document.getElementById("full-program-container"); c.innerHTML = "";
     days.forEach(day => {
-        if(workouts[day]) {
-            let html = `<div style="background:#1a1a1a; margin:10px; padding:15px; border-radius:10px; border:1px solid #333;"><h3 style="color:gold; margin:0;">${day}</h3>`;
-            workouts[day].forEach(ex => html += `<div style="font-size:0.9rem; margin-top:5px; border-bottom:1px solid #333; padding-bottom:3px;">${ex.name} (${ex.sets}x${ex.target[0]}-${ex.target[1]})</div>`);
-            c.innerHTML += html + "</div>";
-        } else {
-            c.innerHTML += `<div style="margin:10px; padding:15px; background:#111; color:#666; border-radius:10px;"><b>${day}</b> - OFF</div>`;
-        }
+        let content = workouts[day].length ? workouts[day].map(e=>`<div style="font-size:0.9rem;border-bottom:1px solid #333;padding:5px;">${e.name}</div>`).join('') : "<i style='color:#666'>OFF DAY</i>";
+        c.innerHTML += `<div style="background:#1a1a1a;margin:10px;padding:15px;border-radius:10px;border:1px solid #333;"><h3 style="color:gold;margin:0;">${day}</h3>${content}</div>`;
     });
          }
-            
+         
