@@ -1,0 +1,21 @@
+{
+    "name": "Patron Gym OS",
+    "short_name": "PatronGym",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#050505",
+    "theme_color": "#FFD700",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "https://cdn-icons-png.flaticon.com/512/3043/3043224.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "https://cdn-icons-png.flaticon.com/512/3043/3043224.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

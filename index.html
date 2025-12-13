@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PATRON GYM OS</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0a0a0a">
+</head>
+<body>
+
+    <header>
+        <div class="logo">PATRON GYM OS ⚡</div>
+    </header>
+
+    <main id="view-tracker" class="view active">
+        <div id="day-selector">
+            </div>
+        <div id="workout-container">
+            </div>
+    </main>
+
+    <main id="view-program" class="view" style="display: none;">
+        <h2 class="section-title">HAFTALIK PLAN</h2>
+        <div id="full-program-container">
+            </div>
+    </main>
+
+    <nav class="bottom-nav">
+        <button class="nav-btn active" onclick="switchView('tracker')">
+            <span class="icon">🏋️‍♂️</span>
+            <span class="label">Antrenman</span>
+        </button>
+        <button class="nav-btn" onclick="switchView('program')">
+            <span class="icon">📅</span>
+            <span class="label">Programım</span>
+        </button>
+    </nav>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">ANALİZ RAPORU</h2>
+            <div id="modal-body"></div>
+            <button class="close-btn" onclick="closeModal()">ANLAŞILDI</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+    </script>
+</body>
+</html>
