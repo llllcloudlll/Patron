@@ -3,94 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PATRON GYM OS v5.0</title>
+    <title>PATRON GYM OS v6.0</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#000000">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
-    <header>
+    <header class="fade-in-down">
         <div class="header-content">
-            <div class="logo">PATRON GYM OS <span style="color:var(--gold); font-size:0.8em;">IRON MAN</span></div>
-            <button class="icon-btn" onclick="toggleSettings()">⚙️</button>
+            <div class="logo">PATRON GYM <span class="gold-text">OS</span></div>
+            <button class="icon-btn" onclick="toggleSettings()"><i class="fa-solid fa-gear"></i></button>
         </div>
     </header>
 
     <div id="settings-panel" class="hidden-panel">
         <h3>SİSTEM AYARLARI</h3>
-        <button class="action-btn" onclick="exportData()">💾 YEDEĞİ İNDİR (BACKUP)</button>
+        <button class="action-btn" onclick="exportData()"><i class="fa-solid fa-download"></i> YEDEĞİ İNDİR</button>
         <div style="margin-top:10px;">
             <input type="file" id="import-file" style="display:none;" onchange="importData(this)">
-            <button class="action-btn outline" onclick="document.getElementById('import-file').click()">📂 YEDEĞİ YÜKLE</button>
+            <button class="action-btn outline" onclick="document.getElementById('import-file').click()"><i class="fa-solid fa-upload"></i> YEDEĞİ YÜKLE</button>
         </div>
         <button class="action-btn danger" onclick="toggleSettings()">KAPAT</button>
     </div>
 
-    <div id="mission-briefing" class="modal">
-        <div class="modal-content briefing-content">
-            <h2 style="color:var(--gold)">GÖREV EMRİ</h2>
-            <div id="briefing-text">Sistem analiz ediliyor...</div>
-            <button class="save-btn" onclick="closeBriefing()">ANLAŞILDI</button>
-        </div>
-    </div>
-
-    <main id="view-tracker" class="view active">
+    <main id="view-tracker" class="view active fade-in">
         <div id="day-selector"></div>
         
         <div class="status-bar">
-            <button class="status-btn" onclick="markDayStatus('active')">💪 ANTRENMAN</button>
-            <button class="status-btn danger" onclick="markDayStatus('sick')">🤒 HASTA / MAZERET</button>
+            <button class="status-btn active-mode" id="btn-train" onclick="markDayStatus('active')">💪 ANTRENMAN</button>
+            <button class="status-btn danger" id="btn-sick" onclick="markDayStatus('sick')">🤒 MAZERET / HASTA</button>
         </div>
 
         <div id="workout-container"></div>
     </main>
 
-    <main id="view-program" class="view" style="display: none;">
+    <main id="view-program" class="view fade-in" style="display: none;">
         <h2 class="section-title">HAFTALIK PLAN</h2>
         <div id="full-program-container"></div>
     </main>
 
-    <main id="view-analytics" class="view" style="display: none;">
-        <h2 class="section-title">GELİŞİM GRAFİKLERİ</h2>
-        <select id="chart-exercise-select" onchange="updateChart()">
-            </select>
-        <div class="chart-container">
-            <canvas id="progressChart"></canvas>
+    <main id="view-body" class="view fade-in" style="display: none;">
+        <h2 class="section-title">VÜCUT GELİŞİMİ</h2>
+        
+        <div class="body-stats-card">
+            <h3><i class="fa-solid fa-ruler-combined"></i> YENİ ÖLÇÜ GİR</h3>
+            <div class="measure-grid">
+                <div class="input-group">
+                    <label>Omuz (cm)</label>
+                    <input type="number" id="m_shoulder" placeholder="0">
+                </div>
+                <div class="input-group">
+                    <label>Göğüs (cm)</label>
+                    <input type="number" id="m_chest" placeholder="0">
+                </div>
+                <div class="input-group">
+                    <label>Sol Kol (cm)</label>
+                    <input type="number" id="m_l_arm" placeholder="0">
+                </div>
+                <div class="input-group">
+                    <label>Sağ Kol (cm)</label>
+                    <input type="number" id="m_r_arm" placeholder="0">
+                </div>
+                <div class="input-group">
+                    <label>Bel (cm)</label>
+                    <input type="number" id="m_waist" placeholder="0">
+                </div>
+                <div class="input-group">
+                    <label>Üst Bacak (cm)</label>
+                    <input type="number" id="m_thigh" placeholder="0">
+                </div>
+                <div class="input-group">
+                    <label>Kalf (cm)</label>
+                    <input type="number" id="m_calf" placeholder="0">
+                </div>
+                <div class="input-group">
+                    <label>Kilo (kg)</label>
+                    <input type="number" id="m_weight" placeholder="0">
+                </div>
+            </div>
+            <button class="save-btn" onclick="saveMeasurements()">ÖLÇÜLERİ KAYDET</button>
         </div>
-        <div id="stats-summary"></div>
+
+        <div id="measurement-history" class="history-list">
+            </div>
     </main>
 
-    <main id="view-ai" class="view" style="display: none;">
+    <main id="view-analytics" class="view fade-in" style="display: none;">
+        <h2 class="section-title">DETAYLI ANALİZ</h2>
+        
+        <div class="chart-mode-selector">
+            <button class="mode-btn active" onclick="setChartMode('workout')">🏋️ GÜÇ GRAFİĞİ</button>
+            <button class="mode-btn" onclick="setChartMode('body')">📏 VÜCUT GRAFİĞİ</button>
+        </div>
+
+        <select id="chart-select" onchange="updateChart()">
+            </select>
+
+        <div class="chart-container">
+            <canvas id="mainChart"></canvas>
+        </div>
+        
+        <div id="stats-summary" class="stats-box"></div>
+    </main>
+
+    <main id="view-ai" class="view fade-in" style="display: none;">
         <div class="ai-interface">
-            <div class="arc-reactor">🧠</div>
-            <h2 style="color:var(--gold); margin-bottom:5px;">JARVIS AI</h2>
-            <p style="color:#666; font-size:0.8rem;">Haftalık Strateji & Analiz</p>
+            <div class="arc-reactor">
+                <i class="fa-solid fa-brain"></i>
+            </div>
+            <h2 class="gold-text">JARVIS AI</h2>
+            <p>Haftalık Konsey & Strateji</p>
             
             <button class="save-btn ai-btn" onclick="askGeminiFullReport()">
-                HAFTALIK RAPORU OLUŞTUR
+                <i class="fa-solid fa-microchip"></i> DETAYLI ANALİZ BAŞLAT
             </button>
             <div id="ai-report-area"></div>
         </div>
     </main>
 
     <nav class="bottom-nav">
-        <button class="nav-btn active" onclick="switchView('tracker')"><span class="icon">🏋️</span><span class="label">Takip</span></button>
-        <button class="nav-btn" onclick="switchView('program')"><span class="icon">📅</span><span class="label">Plan</span></button>
-        <button class="nav-btn" onclick="switchView('analytics')"><span class="icon">📈</span><span class="label">Analiz</span></button>
-        <button class="nav-btn" onclick="switchView('ai')"><span class="icon">🧠</span><span class="label">Jarvis</span></button>
+        <button class="nav-btn active" onclick="switchView('tracker')"><i class="fa-solid fa-dumbbell icon"></i><span class="label">Takip</span></button>
+        <button class="nav-btn" onclick="switchView('program')"><i class="fa-solid fa-calendar-days icon"></i><span class="label">Plan</span></button>
+        <button class="nav-btn" onclick="switchView('body')"><i class="fa-solid fa-ruler-vertical icon"></i><span class="label">Vücut</span></button>
+        <button class="nav-btn" onclick="switchView('analytics')"><i class="fa-solid fa-chart-line icon"></i><span class="label">Analiz</span></button>
+        <button class="nav-btn" onclick="switchView('ai')"><i class="fa-solid fa-robot icon"></i><span class="label">AI</span></button>
     </nav>
 
     <div id="modal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content scale-up">
             <h2 id="modal-title">RAPOR</h2>
             <div id="modal-body"></div>
             <button class="close-btn" onclick="closeModal()">TAMAM</button>
+        </div>
+    </div>
+    
+    <div id="mission-briefing" class="modal">
+        <div class="modal-content briefing-content scale-up">
+            <h2 class="gold-text">GÖREV EMRİ</h2>
+            <div id="briefing-text"></div>
+            <button class="save-btn" onclick="closeBriefing()">ANLAŞILDI</button>
         </div>
     </div>
 
     <script src="app.js"></script>
 </body>
     </html>
-                                                               
+    
