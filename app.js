@@ -1,5 +1,6 @@
 // --- 1. AYARLAR & API ---
-const GEMINI_API_KEY = "AIzaSyCn_GaWtwR2Pym80nOCKfefoCv-yevdSso"; // API ANAHTARINI BURAYA YAPIŞTIR PATRON!
+// PATRON DİKKAT: API Anahtarını tırnakların içine yapıştır!
+const GEMINI_API_KEY = "AIzaSyCn_GaWtwR2Pym80nOCKfefoCv-yevdSso"; 
 
 // --- 2. PROGRAM VERİTABANI (7 GÜN EKSİKSİZ) ---
 const workouts = {
@@ -146,14 +147,14 @@ function renderWorkout() {
     });
 }
 
-// --- 6. VÜCUT ÖLÇÜLERİ (YENİ) ---
+// --- 6. VÜCUT ÖLÇÜLERİ ---
 function saveMeasurements() {
     const stats = {};
     let filled = false;
     Object.keys(bodyParts).forEach(key => {
         const val = document.getElementById(key).value;
         if(val) { stats[key] = parseFloat(val); filled = true; }
-        document.getElementById(key).value = ""; // Temizle
+        document.getElementById(key).value = ""; 
     });
 
     if(!filled) return alert("En az bir ölçü gir Patron.");
@@ -172,7 +173,6 @@ function renderBodyHistory() {
     const history = JSON.parse(localStorage.getItem("body_stats")) || [];
     container.innerHTML = history.length ? "" : "<div style='text-align:center; color:#666;'>Henüz ölçü girmedin.</div>";
     
-    // Sondan başa sırala
     history.slice().reverse().forEach(stat => {
         let details = "";
         Object.keys(bodyParts).forEach(key => {
@@ -182,7 +182,7 @@ function renderBodyHistory() {
     });
 }
 
-// --- 7. KAYIT VE AI ANALİZ ---
+// --- 7. KAYIT VE AI ANALİZ (ANLIK) ---
 async function analyzeAndSave(id, name, maxTarget) {
     const kgInputs = document.querySelectorAll(`[id^='${id}_kg_']`);
     const repInputs = document.querySelectorAll(`[id^='${id}_reps_']`);
@@ -211,11 +211,12 @@ async function analyzeAndSave(id, name, maxTarget) {
             method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
         const data = await res.json();
-        showModal("JARVIS DİYOR Kİ:", data.candidates[0].content.parts[0].text);
+        const aiText = data.candidates && data.candidates[0] ? data.candidates[0].content.parts[0].text : "Cevap alınamadı.";
+        showModal("JARVIS DİYOR Kİ:", aiText);
     } catch(e) { showModal("KAYDEDİLDİ", "İnternet sorunu, ama veri güvende."); }
 }
 
-// --- 8. GRAFİK & ANALİZ (ÇİFT MODLU) ---
+// --- 8. GRAFİK & ANALİZ ---
 function setChartMode(mode) {
     chartMode = mode;
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -257,7 +258,6 @@ function updateChart() {
         labelStr = "Tahmini 1RM Gücü (KG)";
     } else {
         const history = JSON.parse(localStorage.getItem("body_stats")) || [];
-        // Sadece seçili ölçünün olduğu tarihleri al
         const filtered = history.filter(h => h[key]);
         labels = filtered.map(h => h.date.slice(0,5));
         dataPoints = filtered.map(h => h[key]);
@@ -275,7 +275,6 @@ function updateChart() {
                 backgroundColor: 'rgba(255, 215, 0, 0.1)',
                 borderWidth: 3,
                 tension: 0.4,
-                pointBackgroundColor: '#00d9ff',
                 fill: true
             }]
         },
@@ -286,19 +285,9 @@ function updateChart() {
             plugins: { legend: { labels: { color: 'white' } } }
         }
     });
-    
-    // Özet Bilgi
-    const summary = document.getElementById("stats-summary");
-    if(dataPoints.length > 1) {
-        const diff = dataPoints[dataPoints.length-1] - dataPoints[0];
-        const symbol = diff > 0 ? "📈" : (diff < 0 ? "📉" : "➖");
-        summary.innerHTML = `${symbol} Toplam Değişim: <b>${diff.toFixed(1)}</b> birim. <br> Başlangıç: ${dataPoints[0]} -> Son: ${dataPoints[dataPoints.length-1]}`;
-    } else {
-        summary.innerHTML = "Analiz için en az 2 veri girişi lazım.";
-    }
 }
 
-// --- 9. ARAÇLAR (SES, YEDEKLEME) ---
+// --- 9. ARAÇLAR ---
 function startVoice(kgId, repId) {
     if (!('webkitSpeechRecognition' in window)) return alert("Ses desteklenmiyor.");
     const recognition = new webkitSpeechRecognition();
@@ -316,111 +305,67 @@ function showModal(title, body) { document.getElementById("modal-title").innerTe
 function closeModal() { document.getElementById("modal").style.display="none"; }
 function exportData() { const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([JSON.stringify(localStorage)],{type:"application/json"})); a.download=`patron_backup.json`; a.click(); }
 function importData(inp) { const r=new FileReader(); r.onload=e=>{try{const d=JSON.parse(e.target.result);Object.keys(d).forEach(k=>localStorage.setItem(k,d[k]));location.reload();}catch(x){alert("Hata");}}; if(inp.files[0])r.readAsText(inp.files[0]); }
-function askGeminiFullReport() { alert("Detaylı rapor hazırlanıyor... API Key girdiysen çalışır."); }
 function renderProgram() {
     const c = document.getElementById("full-program-container"); c.innerHTML = "";
     days.forEach(day => {
         let content = workouts[day].length ? workouts[day].map(e=>`<div style="font-size:0.9rem;border-bottom:1px solid #333;padding:5px;">${e.name}</div>`).join('') : "<i style='color:#666'>OFF DAY</i>";
         c.innerHTML += `<div style="background:#1a1a1a;margin:10px;padding:15px;border-radius:10px;border:1px solid #333;"><h3 style="color:gold;margin:0;">${day}</h3>${content}</div>`;
     });
-         }
+}
 
-
-         // --- 10. JARVIS AI DETAYLI RAPOR (DÜZELTİLMİŞ) ---
+// --- 10. AI DETAYLI RAPOR (FIXED v6.1) ---
 async function askGeminiFullReport() {
     const area = document.getElementById("ai-report-area");
-    area.innerHTML = `<div style="color:var(--gold); margin-top:10px;"><i class="fa-solid fa-circle-notch fa-spin"></i> Veriler analiz ediliyor Patron...<br><span style="font-size:0.8rem; color:#666;">(Bu işlem 5-10 saniye sürebilir)</span></div>`;
+    area.innerHTML = `<div style="color:var(--gold); margin-top:10px;">Veriler analiz ediliyor Patron...<br><span style="font-size:0.8rem; color:#666;">(5-10 saniye bekle)</span></div>`;
     
-    // 1. API KEY KONTROLÜ
+    // API KONTROLÜ
     if(GEMINI_API_KEY === "AIzaSyCn_GaWtwR2Pym80nOCKfefoCv-yevdSso" || GEMINI_API_KEY.length < 10) {
-        area.innerHTML = `<div style="color:var(--red);">⚠️ HATA: API Anahtarı girilmemiş. Lütfen app.js dosyasının en üstüne anahtarını yapıştır.</div>`;
+        area.innerHTML = `<div style="color:var(--red);">⚠️ HATA: API Anahtarı eksik! Kodun başına yapıştır.</div>`;
         return;
     }
 
-    // 2. ANTRENMAN VERİLERİNİ TOPLA
-    let workoutLog = "ANTRENMAN GEÇMİŞİ:\n";
-    let hasWorkoutData = false;
+    let workoutLog = "ANTRENMANLAR:\n";
     Object.keys(workouts).forEach(day => {
         workouts[day].forEach(ex => {
             const h = JSON.parse(localStorage.getItem(ex.id)) || [];
-            if(h.length > 0) {
-                hasWorkoutData = true;
-                // Son 2 antrenmanı alıp kıyaslama yapabilmesi için
-                const recent = h.slice(-2);
-                workoutLog += `- ${ex.name}: `;
-                recent.forEach(r => workoutLog += `[${r.bestWeight}kg x ${r.bestReps}] `);
-                workoutLog += "\n";
+            if(h.length) {
+                const r = h[h.length-1];
+                workoutLog += `- ${ex.name}: ${r.bestWeight}kg x ${r.bestReps}\n`;
             }
         });
     });
 
-    // 3. VÜCUT ÖLÇÜLERİNİ TOPLA
     let bodyLog = "VÜCUT ÖLÇÜLERİ:\n";
-    const bodyStats = JSON.parse(localStorage.getItem("body_stats")) || [];
-    if(bodyStats.length > 0) {
-        // En son ve ilk ölçümü al
-        const first = bodyStats[0];
-        const last = bodyStats[bodyStats.length-1];
-        bodyLog += `Başlangıç (${first.date}): Kilo:${first.m_weight || '-'}, Kol:${first.m_r_arm || '-'}\n`;
-        bodyLog += `Son Durum (${last.date}): Kilo:${last.m_weight || '-'}, Kol:${last.m_r_arm || '-'}\n`;
-    } else {
-        bodyLog += "Henüz vücut ölçüsü girilmemiş.\n";
+    const bs = JSON.parse(localStorage.getItem("body_stats")) || [];
+    if(bs.length) {
+        const l = bs[bs.length-1];
+        bodyLog += `Son Kayıt (${l.date}): Kilo:${l.m_weight||'-'}, Kol:${l.m_r_arm||'-'}\n`;
     }
 
-    if (!hasWorkoutData) {
-        area.innerHTML = "Henüz yeterli antrenman verisi yok Patron. Birkaç kayıt yapıp tekrar gel.";
-        return;
-    }
-
-    // 4. GEMINI'YE GÖNDERİLECEK KOMUT (PROMPT)
     const promptText = `
-        Sen "Patron"un kişisel, sert ve gerçekçi yapay zeka koçusun.
-        Aşağıda sporcunun antrenman ve vücut verileri var.
-        
+        Sen sert bir vücut geliştirme koçusun. Patron'un verileri:
         ${workoutLog}
-        
         ${bodyLog}
-
-        GÖREVİN:
-        Bu verilere dayanarak HTML formatında (h4, ul, li, b kullanarak) şık bir "Haftalık Konsey Raporu" hazırla.
         
-        ŞU BAŞLIKLARI KULLAN:
-        1. 🦁 **GENEL GİDİŞAT:** Güç artışı var mı? İyi gidiyor mu?
-        2. ⚠️ **ZAYIF HALKALAR:** Hangi bölge veya hareket geride kalmış? (Tekrarlara ve kilolara bak).
-        3. 🍽️ **BESLENME EMRİ:** Performansa göre (düşüş varsa karbonhidrat artır, iyiyse protein yükle vb.) tavsiye ver.
-        4. 🚀 **HAFTALIK STRATEJİ:** Önümüzdeki hafta ne yapmalı?
+        Görevin:
+        1. Güç durumu nasıl?
+        2. Hangi bölge eksik?
+        3. Beslenme tavsiyesi ver.
+        4. Haftalık strateji belirle.
         
-        Üslubun motive edici, net ve "Patron" hitabıyla olsun. Kısa ve öz tut.
+        HTML formatında (<b>, <br>) şık ve kısa yaz.
     `;
 
     try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-        
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
         });
-
-        const data = await response.json();
-        
-        if (data.error) {
-            throw new Error(data.error.message);
-        }
-
-        const aiResponse = data.candidates[0].content.parts[0].text;
-        
-        // Markdown temizliği (yıldızları bold yapma vs. gerekirse) ve HTML basma
-        // Gemini zaten HTML istediğimiz için genelde düzgün verir ama satır başlarını düzeltelim
-        const formattedResponse = aiResponse.replace(/\n/g, "<br>");
-
-        area.innerHTML = `<div class="stats-box" style="border-left: 3px solid var(--blue); animation: fadeIn 0.5s;">${formattedResponse}</div>`;
-
-    } catch (error) {
-        console.error(error);
-        area.innerHTML = `<div style="color:var(--red);">⚠️ Bağlantı Hatası: ${error.message}. İnternetini veya API Anahtarını kontrol et Patron.</div>`;
+        const data = await res.json();
+        const text = data.candidates[0].content.parts[0].text.replace(/\n/g, "<br>");
+        area.innerHTML = `<div style="background:#1a1a1a; padding:15px; border-radius:10px; border:1px solid #333; text-align:left;">${text}</div>`;
+    } catch (e) {
+        area.innerHTML = `<div style="color:var(--red);">Bağlantı hatası: ${e.message}</div>`;
     }
-}
-
-
-
+        }
+         
