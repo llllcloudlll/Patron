@@ -1,120 +1,114 @@
 :root {
-    --bg: #050505;
-    --card: #121212;
+    --bg: #000000;
+    --card: #111111;
     --gold: #FFD700;
-    --gold-dim: rgba(255, 215, 0, 0.15);
+    --gold-glow: 0 0 10px rgba(255, 215, 0, 0.4);
     --text: #ffffff;
     --gray: #666;
-    --off-day: #1a1a1a;
+    --red: #ff3333;
+    --blue: #00d9ff; /* Jarvis Mavisi */
 }
 
 body {
-    background-color: var(--bg);
-    color: var(--text);
+    background-color: var(--bg); color: var(--text);
     font-family: 'Segoe UI', Roboto, sans-serif;
-    margin: 0;
-    padding-bottom: 90px; /* Nav bar için boşluk */
-    user-select: none;
+    margin: 0; padding-bottom: 90px; user-select: none;
 }
 
+/* HEADER */
 header {
-    background: rgba(18, 18, 18, 0.95);
-    padding: 15px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    border-bottom: 1px solid #333;
-    backdrop-filter: blur(10px);
-    text-align: center;
+    background: rgba(10, 10, 10, 0.95); padding: 15px; position: sticky; top: 0; z-index: 100;
+    border-bottom: 1px solid #222; backdrop-filter: blur(10px);
 }
+.header-content { display: flex; justify-content: space-between; align-items: center; }
+.logo { font-weight: 900; letter-spacing: 1px; color: #fff; }
+.icon-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; }
 
-.logo { color: var(--gold); font-weight: 900; letter-spacing: 2px; }
-
-/* GÜN SEÇİCİ */
-#day-selector {
-    display: flex; gap: 8px; overflow-x: auto; padding: 15px;
-    background: var(--bg);
-    scrollbar-width: none;
+/* AYARLAR PANELİ */
+.hidden-panel {
+    display: none; background: #1a1a1a; padding: 20px; position: fixed; top: 60px; right: 10px;
+    z-index: 101; border: 1px solid var(--gold); border-radius: 10px; width: 250px;
 }
+.action-btn {
+    width: 100%; padding: 10px; margin-top: 10px; background: var(--gold); border: none;
+    font-weight: bold; border-radius: 5px; cursor: pointer;
+}
+.action-btn.outline { background: transparent; border: 1px solid var(--gold); color: var(--gold); }
+.action-btn.danger { background: var(--red); color: white; }
+
+/* STATUS BAR (HASTA MODU) */
+.status-bar { display: flex; gap: 10px; padding: 10px 15px; }
+.status-btn {
+    flex: 1; padding: 10px; border: none; border-radius: 8px; background: #222; color: #666; font-weight: bold; cursor: pointer;
+}
+.status-btn.danger { color: var(--red); border: 1px solid #333; }
+.active-mode { background: var(--gold); color: #000; box-shadow: var(--gold-glow); }
+.sick-mode { background: var(--red); color: #fff; box-shadow: 0 0 10px rgba(255, 51, 51, 0.4); }
+
+/* DAY SELECTOR */
+#day-selector { display: flex; gap: 8px; overflow-x: auto; padding: 10px 15px; scrollbar-width: none; }
 .day-btn {
-    background: #1f1f1f; color: #fff; border: 1px solid #333;
-    padding: 8px 15px; border-radius: 20px; white-space: nowrap;
-    font-size: 0.85rem; transition: 0.2s;
+    background: #1f1f1f; color: #fff; border: 1px solid #333; padding: 8px 15px;
+    border-radius: 20px; white-space: nowrap; font-size: 0.85rem; transition: 0.2s;
 }
-.day-btn.active {
-    background: var(--gold); color: #000; font-weight: bold; border-color: var(--gold);
-}
+.day-btn.active { background: var(--gold); color: #000; font-weight: bold; border-color: var(--gold); }
 
 /* KARTLAR */
 .exercise-card {
-    background: var(--card); margin: 15px; padding: 20px;
-    border-radius: 16px; border: 1px solid #2a2a2a;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    background: var(--card); margin: 15px; padding: 20px; border-radius: 16px;
+    border: 1px solid #222; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
 .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .ex-name { font-weight: 700; color: #fff; font-size: 1.05rem; }
-.ex-meta { color: var(--gold); font-size: 0.8rem; background: var(--gold-dim); padding: 4px 8px; border-radius: 6px; }
+.ex-meta { color: var(--gold); font-size: 0.8rem; background: rgba(255,215,0,0.1); padding: 4px 8px; border-radius: 6px; }
 
-.set-row { display: grid; grid-template-columns: 0.5fr 1fr 1fr; gap: 10px; margin-bottom: 8px; align-items: center; }
+/* INPUT ALANI VE MIC */
+.set-row { display: grid; grid-template-columns: 0.4fr 1fr 1fr 0.3fr; gap: 8px; margin-bottom: 8px; align-items: center; }
 .set-label { color: var(--gray); font-size: 0.8rem; }
 input {
     background: #000; border: 1px solid #333; color: #fff; padding: 10px;
     border-radius: 8px; text-align: center; font-size: 1rem; width: 100%; outline: none;
 }
 input:focus { border-color: var(--gold); }
+.mic-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; filter: grayscale(1); }
+.mic-btn.listening { filter: grayscale(0); animation: pulse 1s infinite; }
 
 .save-btn {
-    width: 100%; background: var(--gold); color: #000; border: none;
-    padding: 14px; border-radius: 10px; font-weight: 800; margin-top: 10px;
+    width: 100%; background: var(--gold); color: #000; border: none; padding: 14px;
+    border-radius: 10px; font-weight: 800; margin-top: 10px; cursor: pointer;
 }
 
-/* --- PROGRAM GÖRÜNÜMÜ STİLLERİ --- */
-.section-title { text-align: center; color: var(--gray); font-size: 0.9rem; letter-spacing: 1px; margin-top: 20px; }
+/* AI & ANALYTICS */
+.ai-interface { text-align: center; padding: 20px; }
+.arc-reactor {
+    font-size: 4rem; margin: 20px auto; width: 100px; height: 100px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; border: 2px solid var(--blue);
+    box-shadow: 0 0 20px var(--blue), inset 0 0 20px var(--blue);
+    color: var(--blue); text-shadow: 0 0 10px var(--blue);
+}
+.ai-btn { background: linear-gradient(45deg, #00d9ff, #005f73); color: white; }
 
-.program-day-card {
-    background: var(--card); margin: 15px; border-radius: 12px; overflow: hidden;
-    border: 1px solid #333;
+.chart-container { margin: 20px; background: #151515; padding: 10px; border-radius: 10px; border: 1px solid #333; }
+#chart-exercise-select {
+    width: 90%; margin: 0 5%; padding: 10px; background: #222; color: white;
+    border: 1px solid #444; border-radius: 5px;
 }
-.day-header {
-    background: #1f1f1f; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;
-}
-.day-title { font-weight: bold; color: var(--gold); }
-.day-focus { font-size: 0.8rem; color: #aaa; }
-.exercise-list { padding: 15px; }
-.prog-ex-item {
-    display: flex; justify-content: space-between; padding: 8px 0;
-    border-bottom: 1px solid #222; font-size: 0.9rem;
-}
-.prog-ex-item:last-child { border-bottom: none; }
-.prog-details { color: var(--gray); font-size: 0.8rem; }
 
-/* OFF DAY STİLİ */
-.off-card {
-    margin: 15px; padding: 20px; border-radius: 12px;
-    background: repeating-linear-gradient(45deg, #121212, #121212 10px, #1a1a1a 10px, #1a1a1a 20px);
-    border: 1px dashed #444; text-align: center; opacity: 0.7;
-}
-.off-title { color: #fff; font-weight: bold; margin-bottom: 5px; }
-.off-desc { color: var(--gray); font-size: 0.8rem; font-style: italic; }
-
-/* --- ALT NAV BAR --- */
+/* BOTTOM NAV */
 .bottom-nav {
-    position: fixed; bottom: 0; width: 100%; background: #121212;
-    border-top: 1px solid #333; display: flex; justify-content: space-around;
-    padding: 10px 0; z-index: 200; padding-bottom: max(10px, env(safe-area-inset-bottom));
+    position: fixed; bottom: 0; width: 100%; background: #080808; border-top: 1px solid #222;
+    display: flex; justify-content: space-around; padding: 10px 0; z-index: 200;
 }
-.nav-btn {
-    background: none; border: none; color: #666;
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-}
+.nav-btn { background: none; border: none; color: #555; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .nav-btn.active { color: var(--gold); }
 .nav-btn .icon { font-size: 1.4rem; }
 .nav-btn .label { font-size: 0.7rem; font-weight: 600; }
 
-/* Modal aynı kalıyor */
+/* MODAL */
 .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 999; justify-content: center; align-items: center; }
 .modal-content { background: #1a1a1a; width: 85%; padding: 25px; border-radius: 20px; border: 1px solid var(--gold); text-align: center; }
-.modal h2 { color: var(--gold); margin-top: 0; }
-.analysis-box { background: #252525; padding: 15px; border-radius: 10px; margin: 15px 0; text-align: left; font-size: 0.95rem; line-height: 1.5; }
-.trend-up { color: #00e676; font-weight: bold; } .trend-down { color: #ff3d00; font-weight: bold; } .trend-flat { color: var(--gray); font-weight: bold; }
-.close-btn { background: #333; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; width: 100%; font-weight: bold; }
+.close-btn { background: #333; color: #fff; border: none; padding: 10px; width: 100%; margin-top: 15px; border-radius: 8px; }
+
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+    
