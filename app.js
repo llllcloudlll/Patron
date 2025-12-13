@@ -1,5 +1,5 @@
 // --- 1. AYARLAR & API ---
-const GEMINI_API_KEY = "BURAYA_YAPISTIR"; // API ANAHTARINI BURAYA YAPIŞTIR PATRON!
+const GEMINI_API_KEY = "AIzaSyCn_GaWtwR2Pym80nOCKfefoCv-yevdSso"; // API ANAHTARINI BURAYA YAPIŞTIR PATRON!
 
 // --- 2. PROGRAM VERİTABANI (7 GÜN EKSİKSİZ) ---
 const workouts = {
@@ -325,3 +325,4 @@ function renderProgram() {
     });
          }
          
+
