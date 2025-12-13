@@ -3,52 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PATRON GYM OS</title>
-    <link rel="stylesheet" href="style.css">
+    <title>PATRON GYM OS v5.0</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0a0a0a">
+    <meta name="theme-color" content="#000000">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <header>
-        <div class="logo">PATRON GYM OS ⚡</div>
+        <div class="header-content">
+            <div class="logo">PATRON GYM OS <span style="color:var(--gold); font-size:0.8em;">IRON MAN</span></div>
+            <button class="icon-btn" onclick="toggleSettings()">⚙️</button>
+        </div>
     </header>
 
+    <div id="settings-panel" class="hidden-panel">
+        <h3>SİSTEM AYARLARI</h3>
+        <button class="action-btn" onclick="exportData()">💾 YEDEĞİ İNDİR (BACKUP)</button>
+        <div style="margin-top:10px;">
+            <input type="file" id="import-file" style="display:none;" onchange="importData(this)">
+            <button class="action-btn outline" onclick="document.getElementById('import-file').click()">📂 YEDEĞİ YÜKLE</button>
+        </div>
+        <button class="action-btn danger" onclick="toggleSettings()">KAPAT</button>
+    </div>
+
+    <div id="mission-briefing" class="modal">
+        <div class="modal-content briefing-content">
+            <h2 style="color:var(--gold)">GÖREV EMRİ</h2>
+            <div id="briefing-text">Sistem analiz ediliyor...</div>
+            <button class="save-btn" onclick="closeBriefing()">ANLAŞILDI</button>
+        </div>
+    </div>
+
     <main id="view-tracker" class="view active">
-        <div id="day-selector">
-            </div>
-        <div id="workout-container">
-            </div>
+        <div id="day-selector"></div>
+        
+        <div class="status-bar">
+            <button class="status-btn" onclick="markDayStatus('active')">💪 ANTRENMAN</button>
+            <button class="status-btn danger" onclick="markDayStatus('sick')">🤒 HASTA / MAZERET</button>
+        </div>
+
+        <div id="workout-container"></div>
     </main>
 
     <main id="view-program" class="view" style="display: none;">
         <h2 class="section-title">HAFTALIK PLAN</h2>
-        <div id="full-program-container">
-            </div>
+        <div id="full-program-container"></div>
+    </main>
+
+    <main id="view-analytics" class="view" style="display: none;">
+        <h2 class="section-title">GELİŞİM GRAFİKLERİ</h2>
+        <select id="chart-exercise-select" onchange="updateChart()">
+            </select>
+        <div class="chart-container">
+            <canvas id="progressChart"></canvas>
+        </div>
+        <div id="stats-summary"></div>
+    </main>
+
+    <main id="view-ai" class="view" style="display: none;">
+        <div class="ai-interface">
+            <div class="arc-reactor">🧠</div>
+            <h2 style="color:var(--gold); margin-bottom:5px;">JARVIS AI</h2>
+            <p style="color:#666; font-size:0.8rem;">Haftalık Strateji & Analiz</p>
+            
+            <button class="save-btn ai-btn" onclick="askGeminiFullReport()">
+                HAFTALIK RAPORU OLUŞTUR
+            </button>
+            <div id="ai-report-area"></div>
+        </div>
     </main>
 
     <nav class="bottom-nav">
-        <button class="nav-btn active" onclick="switchView('tracker')">
-            <span class="icon">🏋️‍♂️</span>
-            <span class="label">Antrenman</span>
-        </button>
-        <button class="nav-btn" onclick="switchView('program')">
-            <span class="icon">📅</span>
-            <span class="label">Programım</span>
-        </button>
+        <button class="nav-btn active" onclick="switchView('tracker')"><span class="icon">🏋️</span><span class="label">Takip</span></button>
+        <button class="nav-btn" onclick="switchView('program')"><span class="icon">📅</span><span class="label">Plan</span></button>
+        <button class="nav-btn" onclick="switchView('analytics')"><span class="icon">📈</span><span class="label">Analiz</span></button>
+        <button class="nav-btn" onclick="switchView('ai')"><span class="icon">🧠</span><span class="label">Jarvis</span></button>
     </nav>
 
     <div id="modal" class="modal">
         <div class="modal-content">
-            <h2 id="modal-title">ANALİZ RAPORU</h2>
+            <h2 id="modal-title">RAPOR</h2>
             <div id="modal-body"></div>
-            <button class="close-btn" onclick="closeModal()">ANLAŞILDI</button>
+            <button class="close-btn" onclick="closeModal()">TAMAM</button>
         </div>
     </div>
 
     <script src="app.js"></script>
-    <script>
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
-    </script>
 </body>
-</html>
+    </html>
+                                                               
