@@ -324,5 +324,103 @@ function renderProgram() {
         c.innerHTML += `<div style="background:#1a1a1a;margin:10px;padding:15px;border-radius:10px;border:1px solid #333;"><h3 style="color:gold;margin:0;">${day}</h3>${content}</div>`;
     });
          }
-         
+
+
+         // --- 10. JARVIS AI DETAYLI RAPOR (DÜZELTİLMİŞ) ---
+async function askGeminiFullReport() {
+    const area = document.getElementById("ai-report-area");
+    area.innerHTML = `<div style="color:var(--gold); margin-top:10px;"><i class="fa-solid fa-circle-notch fa-spin"></i> Veriler analiz ediliyor Patron...<br><span style="font-size:0.8rem; color:#666;">(Bu işlem 5-10 saniye sürebilir)</span></div>`;
+    
+    // 1. API KEY KONTROLÜ
+    if(GEMINI_API_KEY === "AIzaSyCn_GaWtwR2Pym80nOCKfefoCv-yevdSso" || GEMINI_API_KEY.length < 10) {
+        area.innerHTML = `<div style="color:var(--red);">⚠️ HATA: API Anahtarı girilmemiş. Lütfen app.js dosyasının en üstüne anahtarını yapıştır.</div>`;
+        return;
+    }
+
+    // 2. ANTRENMAN VERİLERİNİ TOPLA
+    let workoutLog = "ANTRENMAN GEÇMİŞİ:\n";
+    let hasWorkoutData = false;
+    Object.keys(workouts).forEach(day => {
+        workouts[day].forEach(ex => {
+            const h = JSON.parse(localStorage.getItem(ex.id)) || [];
+            if(h.length > 0) {
+                hasWorkoutData = true;
+                // Son 2 antrenmanı alıp kıyaslama yapabilmesi için
+                const recent = h.slice(-2);
+                workoutLog += `- ${ex.name}: `;
+                recent.forEach(r => workoutLog += `[${r.bestWeight}kg x ${r.bestReps}] `);
+                workoutLog += "\n";
+            }
+        });
+    });
+
+    // 3. VÜCUT ÖLÇÜLERİNİ TOPLA
+    let bodyLog = "VÜCUT ÖLÇÜLERİ:\n";
+    const bodyStats = JSON.parse(localStorage.getItem("body_stats")) || [];
+    if(bodyStats.length > 0) {
+        // En son ve ilk ölçümü al
+        const first = bodyStats[0];
+        const last = bodyStats[bodyStats.length-1];
+        bodyLog += `Başlangıç (${first.date}): Kilo:${first.m_weight || '-'}, Kol:${first.m_r_arm || '-'}\n`;
+        bodyLog += `Son Durum (${last.date}): Kilo:${last.m_weight || '-'}, Kol:${last.m_r_arm || '-'}\n`;
+    } else {
+        bodyLog += "Henüz vücut ölçüsü girilmemiş.\n";
+    }
+
+    if (!hasWorkoutData) {
+        area.innerHTML = "Henüz yeterli antrenman verisi yok Patron. Birkaç kayıt yapıp tekrar gel.";
+        return;
+    }
+
+    // 4. GEMINI'YE GÖNDERİLECEK KOMUT (PROMPT)
+    const promptText = `
+        Sen "Patron"un kişisel, sert ve gerçekçi yapay zeka koçusun.
+        Aşağıda sporcunun antrenman ve vücut verileri var.
+        
+        ${workoutLog}
+        
+        ${bodyLog}
+
+        GÖREVİN:
+        Bu verilere dayanarak HTML formatında (h4, ul, li, b kullanarak) şık bir "Haftalık Konsey Raporu" hazırla.
+        
+        ŞU BAŞLIKLARI KULLAN:
+        1. 🦁 **GENEL GİDİŞAT:** Güç artışı var mı? İyi gidiyor mu?
+        2. ⚠️ **ZAYIF HALKALAR:** Hangi bölge veya hareket geride kalmış? (Tekrarlara ve kilolara bak).
+        3. 🍽️ **BESLENME EMRİ:** Performansa göre (düşüş varsa karbonhidrat artır, iyiyse protein yükle vb.) tavsiye ver.
+        4. 🚀 **HAFTALIK STRATEJİ:** Önümüzdeki hafta ne yapmalı?
+        
+        Üslubun motive edici, net ve "Patron" hitabıyla olsun. Kısa ve öz tut.
+    `;
+
+    try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+        });
+
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error.message);
+        }
+
+        const aiResponse = data.candidates[0].content.parts[0].text;
+        
+        // Markdown temizliği (yıldızları bold yapma vs. gerekirse) ve HTML basma
+        // Gemini zaten HTML istediğimiz için genelde düzgün verir ama satır başlarını düzeltelim
+        const formattedResponse = aiResponse.replace(/\n/g, "<br>");
+
+        area.innerHTML = `<div class="stats-box" style="border-left: 3px solid var(--blue); animation: fadeIn 0.5s;">${formattedResponse}</div>`;
+
+    } catch (error) {
+        console.error(error);
+        area.innerHTML = `<div style="color:var(--red);">⚠️ Bağlantı Hatası: ${error.message}. İnternetini veya API Anahtarını kontrol et Patron.</div>`;
+    }
+}
+
+
 
