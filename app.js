@@ -1,11 +1,11 @@
 // =================================================================
-// 1. AYARLAR & API (PATRON, ANAHTARI AŞAĞIDAKİ TIRNAKLARIN İÇİNE YAPIŞTIR)
+// 1. AYARLAR & API (SENİN ANAHTARIN YERLEŞTİRİLDİ PATRON)
 // =================================================================
-const GEMINI_API_KEY = "AIzaSyCn_GaWtwR2Pym80nOCKfefoCv-yevdSso"; 
+const GEMINI_API_KEY = "AIzaSyCn_GaWtwR2Pym80nOCKfefoCv-yevdSso";
 
 
 // =================================================================
-// 2. PROGRAM VERİTABANI (7 GÜN EKSİKSİZ & HATA GİDERİLMİŞ)
+// 2. PROGRAM VERİTABANI (7 GÜN EKSİKSİZ)
 // =================================================================
 const workouts = {
     "Pazartesi": [
@@ -76,6 +76,7 @@ window.onload = function() {
 function checkMissionBriefing() {
     const lastLogin = localStorage.getItem("lastLoginDate");
     const today = new Date().toLocaleDateString();
+    // Eğer bugün antrenman varsa ve ilk girişse briefing ver
     if (lastLogin !== today && workouts[currentDay] && workouts[currentDay].length > 0) {
         document.getElementById("mission-briefing").style.display = "flex";
         document.getElementById("briefing-text").innerHTML = `<b>GÜNAYDIN PATRON.</b><br>Bugün: <span style="color:gold">${currentDay}</span>.<br>Hedef: Zirveye tırmanmak.`;
@@ -219,9 +220,6 @@ async function analyzeAndSave(id, name, maxTarget) {
 
     // GEMINI ÇAĞRISI (Anlık)
     showModal("AI ANALİZİ", "🧠 Veriler inceleniyor...");
-    if(!GEMINI_API_KEY || GEMINI_API_KEY.includes("BURAYA")) {
-        return showModal("KAYDEDİLDİ", "Kayıt başarılı. (Not: AI Anahtarı girilmemiş).");
-    }
 
     try {
         const prompt = `Koç, sporcu ${name} hareketinde ${bestWeight}kg x ${bestReps} yaptı. Hedef ${maxTarget} tekrardı. Tek cümlelik sert bir yorum yap.`;
@@ -316,18 +314,13 @@ function updateChart() {
 }
 
 // =================================================================
-// 8. JARVIS AI DETAYLI RAPOR (DÜZELTİLMİŞ)
+// 8. JARVIS AI DETAYLI RAPOR
 // =================================================================
 async function askGeminiFullReport() {
     const area = document.getElementById("ai-report-area");
     area.innerHTML = `<div style="color:var(--gold); margin-top:10px;">Veriler analiz ediliyor Patron...<br><span style="font-size:0.8rem; color:#666;">(5-10 saniye bekle)</span></div>`;
     
-    // API KEY KONTROLÜ (Gevşetilmiş Kontrol)
-    if(!GEMINI_API_KEY || GEMINI_API_KEY.includes("BURAYA")) {
-        area.innerHTML = `<div style="color:var(--red);">⚠️ HATA: API Anahtarı eksik! 'app.js' dosyasının en üst satırına anahtarını yapıştır.</div>`;
-        return;
-    }
-
+    // VERİ TOPLAMA
     let workoutLog = "ANTRENMANLAR:\n";
     let hasData = false;
     Object.keys(workouts).forEach(day => {
@@ -408,4 +401,5 @@ function renderProgram() {
         let content = workouts[day].length ? workouts[day].map(e=>`<div style="font-size:0.9rem;border-bottom:1px solid #333;padding:5px;">${e.name}</div>`).join('') : "<i style='color:#666'>OFF DAY</i>";
         c.innerHTML += `<div style="background:#1a1a1a;margin:10px;padding:15px;border-radius:10px;border:1px solid #333;"><h3 style="color:gold;margin:0;">${day}</h3>${content}</div>`;
     });
-    }
+         }
+            
