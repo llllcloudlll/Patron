@@ -3,7 +3,7 @@
 // ===============================
 
 // ====== GEMINI SETTINGS ======
-const GEMINI_API_KEY = "AIzaSyD31BWaUshnXMy9S_HIrHL93lTATEWfqzY"; // <-- Patron: buraya yaz
+const GEMINI_API_KEY = "AIzaSyD-DNYsbMGMXz7fOCqBCDJtbzOKG8Es2mM"; // <-- Patron: buraya yaz
 
 // Gemini 2.5 model kodları (generateContent):
 // - gemini-2.5-flash (Stable)
@@ -1926,3 +1926,4 @@ window.onload = function(){
   renderAIReportCached();
   renderAIChat();
 };
+
