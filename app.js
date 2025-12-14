@@ -1,8 +1,12 @@
-// --- 1. AYARLAR & API ---
-// PATRON DİKKAT: API Anahtarını tırnakların içine yapıştır!
+// =================================================================
+// 1. AYARLAR & API (PATRON, ANAHTARI AŞAĞIDAKİ TIRNAKLARIN İÇİNE YAPIŞTIR)
+// =================================================================
 const GEMINI_API_KEY = "AIzaSyCn_GaWtwR2Pym80nOCKfefoCv-yevdSso"; 
 
-// --- 2. PROGRAM VERİTABANI (7 GÜN EKSİKSİZ) ---
+
+// =================================================================
+// 2. PROGRAM VERİTABANI (7 GÜN EKSİKSİZ & HATA GİDERİLMİŞ)
+// =================================================================
 const workouts = {
     "Pazartesi": [
         { id: "pzt_1", name: "Incline Dumbbell Press", sets: 3, target: [6, 10], rir: "1-2" },
@@ -50,7 +54,6 @@ const workouts = {
     "Pazar": [] // OFF DAY
 };
 
-// VÜCUT ÖLÇÜLERİ ETİKETLERİ
 const bodyParts = {
     m_shoulder: "Omuz", m_chest: "Göğüs", m_l_arm: "Sol Kol", m_r_arm: "Sağ Kol",
     m_waist: "Bel", m_thigh: "Üst Bacak", m_calf: "Kalf", m_weight: "Kilo"
@@ -60,9 +63,11 @@ const days = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartes
 let currentDay = "Pazartesi";
 let isSickMode = false;
 let myChart = null;
-let chartMode = 'workout'; // 'workout' veya 'body'
+let chartMode = 'workout';
 
-// --- 3. BAŞLATICI ---
+// =================================================================
+// 3. SİSTEM MOTORU
+// =================================================================
 window.onload = function() {
     initTracker();
     checkMissionBriefing();
@@ -73,13 +78,12 @@ function checkMissionBriefing() {
     const today = new Date().toLocaleDateString();
     if (lastLogin !== today && workouts[currentDay] && workouts[currentDay].length > 0) {
         document.getElementById("mission-briefing").style.display = "flex";
-        document.getElementById("briefing-text").innerHTML = `<b>GÜNAYDIN PATRON.</b><br>Bugün: <span style="color:gold">${currentDay}</span>.<br>Hedef: Zirve. Hazır mısın?`;
+        document.getElementById("briefing-text").innerHTML = `<b>GÜNAYDIN PATRON.</b><br>Bugün: <span style="color:gold">${currentDay}</span>.<br>Hedef: Zirveye tırmanmak.`;
         localStorage.setItem("lastLoginDate", today);
     }
 }
 function closeBriefing() { document.getElementById("mission-briefing").style.display = "none"; }
 
-// --- 4. GÖRÜNÜM GEÇİŞLERİ ---
 function switchView(viewName) {
     document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
     document.getElementById(`view-${viewName}`).style.display = 'block';
@@ -92,20 +96,28 @@ function switchView(viewName) {
     if(viewName === 'body') renderBodyHistory();
 }
 
-// --- 5. TRACKER (ANTRENMAN) ---
+// =================================================================
+// 4. ANTRENMAN TAKİP
+// =================================================================
 function initTracker() {
     const selector = document.getElementById("day-selector");
     selector.innerHTML = "";
     days.forEach(day => {
         const btn = document.createElement("button");
         btn.className = `day-btn ${day === currentDay ? 'active' : ''}`;
-        if (workouts[day].length === 0) { btn.style.opacity = "0.6"; btn.innerText = day.substr(0,3) + " (OFF)"; } 
-        else { btn.innerText = day; }
+        if (workouts[day].length === 0) { 
+            btn.style.opacity = "0.6"; 
+            btn.innerText = day.substr(0,3) + " (OFF)"; 
+        } else { 
+            btn.innerText = day; 
+        }
         
         btn.onclick = () => { 
             document.querySelectorAll(".day-btn").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
-            currentDay = day; isSickMode = false; renderWorkout(); 
+            currentDay = day; 
+            isSickMode = false; 
+            renderWorkout(); 
         };
         selector.appendChild(btn);
     });
@@ -122,7 +134,7 @@ function renderWorkout() {
     container.innerHTML = "";
 
     if (isSickMode) {
-        container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--red); border:1px dashed var(--red); border-radius:15px; margin:20px;"><i class="fa-solid fa-bed" style="font-size:3rem; margin-bottom:10px;"></i><h3>MAZERET MODU</h3><p>Dinlen Patron.</p><button class="save-btn" style="background:#333;" onclick="alert('Kaydedildi')">KAYDET</button></div>`;
+        container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--red); border:1px dashed var(--red); border-radius:15px; margin:20px;"><i class="fa-solid fa-bed" style="font-size:3rem; margin-bottom:10px;"></i><h3>MAZERET MODU</h3><p>Bugün dinlen Patron. Kayıt tutmuyoruz.</p></div>`;
         return;
     }
 
@@ -134,7 +146,7 @@ function renderWorkout() {
     workouts[currentDay].forEach(ex => {
         const history = JSON.parse(localStorage.getItem(ex.id)) || [];
         const last = history[history.length - 1];
-        let info = last ? `Son: ${last.bestWeight}kg x ${last.bestReps}` : "İlk Kayıt";
+        let info = last ? `Son: ${last.bestWeight}kg x ${last.bestReps}` : "İlk Kayıt Bekleniyor";
 
         const card = document.createElement("div");
         card.className = "exercise-card";
@@ -147,7 +159,9 @@ function renderWorkout() {
     });
 }
 
-// --- 6. VÜCUT ÖLÇÜLERİ ---
+// =================================================================
+// 5. VÜCUT ÖLÇÜLERİ
+// =================================================================
 function saveMeasurements() {
     const stats = {};
     let filled = false;
@@ -164,14 +178,14 @@ function saveMeasurements() {
     history.push(stats);
     localStorage.setItem("body_stats", JSON.stringify(history));
     
-    showModal("KAYDEDİLDİ", "Vücut verilerin sisteme işlendi. Gelişimini grafikten takip edebilirsin.");
+    showModal("KAYDEDİLDİ", "Ölçüler veritabanına işlendi.");
     renderBodyHistory();
 }
 
 function renderBodyHistory() {
     const container = document.getElementById("measurement-history");
     const history = JSON.parse(localStorage.getItem("body_stats")) || [];
-    container.innerHTML = history.length ? "" : "<div style='text-align:center; color:#666;'>Henüz ölçü girmedin.</div>";
+    container.innerHTML = history.length ? "" : "<div style='text-align:center; color:#666;'>Kayıt yok.</div>";
     
     history.slice().reverse().forEach(stat => {
         let details = "";
@@ -182,7 +196,9 @@ function renderBodyHistory() {
     });
 }
 
-// --- 7. KAYIT VE AI ANALİZ (ANLIK) ---
+// =================================================================
+// 6. VERİ KAYDI VE AI ANLIK ANALİZ
+// =================================================================
 async function analyzeAndSave(id, name, maxTarget) {
     const kgInputs = document.querySelectorAll(`[id^='${id}_kg_']`);
     const repInputs = document.querySelectorAll(`[id^='${id}_reps_']`);
@@ -201,9 +217,11 @@ async function analyzeAndSave(id, name, maxTarget) {
     history.push({ date: new Date().toLocaleDateString(), bestWeight, bestReps });
     localStorage.setItem(id, JSON.stringify(history));
 
-    // GEMINI ÇAĞRISI
+    // GEMINI ÇAĞRISI (Anlık)
     showModal("AI ANALİZİ", "🧠 Veriler inceleniyor...");
-    if(GEMINI_API_KEY === "AIzaSyCn_GaWtwR2Pym80nOCKfefoCv-yevdSso") return showModal("KAYDEDİLDİ", "Veriler kaydedildi (API Anahtarı yok).");
+    if(!GEMINI_API_KEY || GEMINI_API_KEY.includes("BURAYA")) {
+        return showModal("KAYDEDİLDİ", "Kayıt başarılı. (Not: AI Anahtarı girilmemiş).");
+    }
 
     try {
         const prompt = `Koç, sporcu ${name} hareketinde ${bestWeight}kg x ${bestReps} yaptı. Hedef ${maxTarget} tekrardı. Tek cümlelik sert bir yorum yap.`;
@@ -211,12 +229,14 @@ async function analyzeAndSave(id, name, maxTarget) {
             method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
         const data = await res.json();
-        const aiText = data.candidates && data.candidates[0] ? data.candidates[0].content.parts[0].text : "Cevap alınamadı.";
+        const aiText = data.candidates && data.candidates[0] ? data.candidates[0].content.parts[0].text : "AI Cevap veremedi.";
         showModal("JARVIS DİYOR Kİ:", aiText);
-    } catch(e) { showModal("KAYDEDİLDİ", "İnternet sorunu, ama veri güvende."); }
+    } catch(e) { showModal("KAYDEDİLDİ", "Veriler kaydedildi (İnternet sorunu olabilir)."); }
 }
 
-// --- 8. GRAFİK & ANALİZ ---
+// =================================================================
+// 7. GRAFİK & ANALİZ
+// =================================================================
 function setChartMode(mode) {
     chartMode = mode;
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -285,9 +305,86 @@ function updateChart() {
             plugins: { legend: { labels: { color: 'white' } } }
         }
     });
+    
+    const summary = document.getElementById("stats-summary");
+    if(dataPoints.length > 1) {
+        const diff = dataPoints[dataPoints.length-1] - dataPoints[0];
+        summary.innerHTML = `Toplam Değişim: <b>${diff.toFixed(1)}</b> birim.`;
+    } else {
+        summary.innerHTML = "Grafik için en az 2 veri lazım.";
+    }
 }
 
-// --- 9. ARAÇLAR ---
+// =================================================================
+// 8. JARVIS AI DETAYLI RAPOR (DÜZELTİLMİŞ)
+// =================================================================
+async function askGeminiFullReport() {
+    const area = document.getElementById("ai-report-area");
+    area.innerHTML = `<div style="color:var(--gold); margin-top:10px;">Veriler analiz ediliyor Patron...<br><span style="font-size:0.8rem; color:#666;">(5-10 saniye bekle)</span></div>`;
+    
+    // API KEY KONTROLÜ (Gevşetilmiş Kontrol)
+    if(!GEMINI_API_KEY || GEMINI_API_KEY.includes("BURAYA")) {
+        area.innerHTML = `<div style="color:var(--red);">⚠️ HATA: API Anahtarı eksik! 'app.js' dosyasının en üst satırına anahtarını yapıştır.</div>`;
+        return;
+    }
+
+    let workoutLog = "ANTRENMANLAR:\n";
+    let hasData = false;
+    Object.keys(workouts).forEach(day => {
+        workouts[day].forEach(ex => {
+            const h = JSON.parse(localStorage.getItem(ex.id)) || [];
+            if(h.length) {
+                hasData = true;
+                const r = h[h.length-1];
+                workoutLog += `- ${ex.name}: ${r.bestWeight}kg x ${r.bestReps}\n`;
+            }
+        });
+    });
+
+    if (!hasData) {
+        area.innerHTML = `<div style="color:white;">Henüz hiç antrenman kaydı yok Patron. Önce bir antrenman yap.</div>`;
+        return;
+    }
+
+    let bodyLog = "VÜCUT ÖLÇÜLERİ:\n";
+    const bs = JSON.parse(localStorage.getItem("body_stats")) || [];
+    if(bs.length) {
+        const l = bs[bs.length-1];
+        bodyLog += `Son Kayıt (${l.date}): Kilo:${l.m_weight||'-'}, Kol:${l.m_r_arm||'-'}\n`;
+    }
+
+    const promptText = `
+        Sen "Patron"un kişisel AI koçusun.
+        ${workoutLog}
+        ${bodyLog}
+        
+        GÖREVİN:
+        Bu verilere dayanarak kısa, net, HTML formatında (liste, kalın yazı) bir durum raporu hazırla.
+        Güç artışı var mı? Eksik bölge neresi? Haftaya ne yapmalı?
+    `;
+
+    try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+        });
+        const data = await res.json();
+        
+        if(data.error) {
+            area.innerHTML = `<div style="color:var(--red);">API Hatası: ${data.error.message}</div>`;
+            return;
+        }
+
+        const text = data.candidates[0].content.parts[0].text.replace(/\n/g, "<br>");
+        area.innerHTML = `<div style="background:#1a1a1a; padding:15px; border-radius:10px; border:1px solid #333; text-align:left;">${text}</div>`;
+    } catch (e) {
+        area.innerHTML = `<div style="color:var(--red);">Bağlantı hatası: ${e.message}</div>`;
+    }
+}
+
+// =================================================================
+// 9. YARDIMCI ARAÇLAR
+// =================================================================
 function startVoice(kgId, repId) {
     if (!('webkitSpeechRecognition' in window)) return alert("Ses desteklenmiyor.");
     const recognition = new webkitSpeechRecognition();
@@ -311,61 +408,4 @@ function renderProgram() {
         let content = workouts[day].length ? workouts[day].map(e=>`<div style="font-size:0.9rem;border-bottom:1px solid #333;padding:5px;">${e.name}</div>`).join('') : "<i style='color:#666'>OFF DAY</i>";
         c.innerHTML += `<div style="background:#1a1a1a;margin:10px;padding:15px;border-radius:10px;border:1px solid #333;"><h3 style="color:gold;margin:0;">${day}</h3>${content}</div>`;
     });
-}
-
-// --- 10. AI DETAYLI RAPOR (FIXED v6.1) ---
-async function askGeminiFullReport() {
-    const area = document.getElementById("ai-report-area");
-    area.innerHTML = `<div style="color:var(--gold); margin-top:10px;">Veriler analiz ediliyor Patron...<br><span style="font-size:0.8rem; color:#666;">(5-10 saniye bekle)</span></div>`;
-    
-    // API KONTROLÜ
-    if(GEMINI_API_KEY === "AIzaSyCn_GaWtwR2Pym80nOCKfefoCv-yevdSso" || GEMINI_API_KEY.length < 10) {
-        area.innerHTML = `<div style="color:var(--red);">⚠️ HATA: API Anahtarı eksik! Kodun başına yapıştır.</div>`;
-        return;
     }
-
-    let workoutLog = "ANTRENMANLAR:\n";
-    Object.keys(workouts).forEach(day => {
-        workouts[day].forEach(ex => {
-            const h = JSON.parse(localStorage.getItem(ex.id)) || [];
-            if(h.length) {
-                const r = h[h.length-1];
-                workoutLog += `- ${ex.name}: ${r.bestWeight}kg x ${r.bestReps}\n`;
-            }
-        });
-    });
-
-    let bodyLog = "VÜCUT ÖLÇÜLERİ:\n";
-    const bs = JSON.parse(localStorage.getItem("body_stats")) || [];
-    if(bs.length) {
-        const l = bs[bs.length-1];
-        bodyLog += `Son Kayıt (${l.date}): Kilo:${l.m_weight||'-'}, Kol:${l.m_r_arm||'-'}\n`;
-    }
-
-    const promptText = `
-        Sen sert bir vücut geliştirme koçusun. Patron'un verileri:
-        ${workoutLog}
-        ${bodyLog}
-        
-        Görevin:
-        1. Güç durumu nasıl?
-        2. Hangi bölge eksik?
-        3. Beslenme tavsiyesi ver.
-        4. Haftalık strateji belirle.
-        
-        HTML formatında (<b>, <br>) şık ve kısa yaz.
-    `;
-
-    try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-            method: 'POST', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
-        });
-        const data = await res.json();
-        const text = data.candidates[0].content.parts[0].text.replace(/\n/g, "<br>");
-        area.innerHTML = `<div style="background:#1a1a1a; padding:15px; border-radius:10px; border:1px solid #333; text-align:left;">${text}</div>`;
-    } catch (e) {
-        area.innerHTML = `<div style="color:var(--red);">Bağlantı hatası: ${e.message}</div>`;
-    }
-        }
-         
