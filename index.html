@@ -1,154 +1,502 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PATRON GYM OS v6.0</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#000000">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>PATRON GYM OS v11.2</title>
+
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#050507" />
+
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 </head>
-<body>
 
-    <header class="fade-in-down">
-        <div class="header-content">
-            <div class="logo">PATRON GYM <span class="gold-text">OS</span></div>
-            <button class="icon-btn" onclick="toggleSettings()"><i class="fa-solid fa-gear"></i></button>
-        </div>
-    </header>
+<body data-theme="neo">
 
-    <div id="settings-panel" class="hidden-panel">
-        <h3>SİSTEM AYARLARI</h3>
-        <button class="action-btn" onclick="exportData()"><i class="fa-solid fa-download"></i> YEDEĞİ İNDİR</button>
-        <div style="margin-top:10px;">
-            <input type="file" id="import-file" style="display:none;" onchange="importData(this)">
-            <button class="action-btn outline" onclick="document.getElementById('import-file').click()"><i class="fa-solid fa-upload"></i> YEDEĞİ YÜKLE</button>
-        </div>
-        <button class="action-btn danger" onclick="toggleSettings()">KAPAT</button>
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-title">PATRON <span class="brand-accent">GYM OS</span></div>
+        <div class="brand-sub">v11.2 • Infinite Coach</div>
+      </div>
+
+      <div class="top-actions">
+        <button class="icon-btn" onclick="openSearch()" title="Ara"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <button class="icon-btn" onclick="toggleSettings()" title="Ayarlar"><i class="fa-solid fa-gear"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- SETTINGS PANEL -->
+  <div id="settings-panel" class="panel">
+    <div class="panel-head">
+      <div class="panel-title"><i class="fa-solid fa-sliders"></i> Ayarlar</div>
+      <button class="icon-btn" onclick="toggleSettings()"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
-    <main id="view-tracker" class="view active fade-in">
-        <div id="day-selector"></div>
-        
-        <div class="status-bar">
-            <button class="status-btn active-mode" id="btn-train" onclick="markDayStatus('active')">💪 ANTRENMAN</button>
-            <button class="status-btn danger" id="btn-sick" onclick="markDayStatus('sick')">🤒 MAZERET / HASTA</button>
+    <div class="panel-body">
+
+      <div class="setting-card">
+        <div class="setting-title"><i class="fa-solid fa-palette"></i> Tema</div>
+        <div class="seg">
+          <button class="seg-btn" onclick="setTheme('neo')">NEO</button>
+          <button class="seg-btn" onclick="setTheme('gold')">GOLD</button>
+          <button class="seg-btn" onclick="setTheme('crimson')">CRIMSON</button>
         </div>
+      </div>
 
-        <div id="workout-container"></div>
-    </main>
+      <div class="setting-card">
+        <label class="switch-row">
+          <span><i class="fa-solid fa-wand-magic-sparkles"></i> Animasyon</span>
+          <input type="checkbox" id="toggle-anim" onchange="setAnimations(this.checked)">
+        </label>
+        <label class="switch-row">
+          <span><i class="fa-solid fa-brain"></i> AI Cache (hafta/ay sakla)</span>
+          <input type="checkbox" id="toggle-cache" onchange="setAICache(this.checked)">
+        </label>
+        <label class="switch-row">
+          <span><i class="fa-solid fa-file-shield"></i> Gizlilik (AI’ye sadece özet yolla)</span>
+          <input type="checkbox" id="toggle-privacy" onchange="setPrivacyMode(this.checked)">
+        </label>
+      </div>
 
-    <main id="view-program" class="view fade-in" style="display: none;">
-        <h2 class="section-title">HAFTALIK PLAN</h2>
-        <div id="full-program-container"></div>
-    </main>
-
-    <main id="view-body" class="view fade-in" style="display: none;">
-        <h2 class="section-title">VÜCUT GELİŞİMİ</h2>
-        
-        <div class="body-stats-card">
-            <h3><i class="fa-solid fa-ruler-combined"></i> YENİ ÖLÇÜ GİR</h3>
-            <div class="measure-grid">
-                <div class="input-group">
-                    <label>Omuz (cm)</label>
-                    <input type="number" id="m_shoulder" placeholder="0">
-                </div>
-                <div class="input-group">
-                    <label>Göğüs (cm)</label>
-                    <input type="number" id="m_chest" placeholder="0">
-                </div>
-                <div class="input-group">
-                    <label>Sol Kol (cm)</label>
-                    <input type="number" id="m_l_arm" placeholder="0">
-                </div>
-                <div class="input-group">
-                    <label>Sağ Kol (cm)</label>
-                    <input type="number" id="m_r_arm" placeholder="0">
-                </div>
-                <div class="input-group">
-                    <label>Bel (cm)</label>
-                    <input type="number" id="m_waist" placeholder="0">
-                </div>
-                <div class="input-group">
-                    <label>Üst Bacak (cm)</label>
-                    <input type="number" id="m_thigh" placeholder="0">
-                </div>
-                <div class="input-group">
-                    <label>Kalf (cm)</label>
-                    <input type="number" id="m_calf" placeholder="0">
-                </div>
-                <div class="input-group">
-                    <label>Kilo (kg)</label>
-                    <input type="number" id="m_weight" placeholder="0">
-                </div>
-            </div>
-            <button class="save-btn" onclick="saveMeasurements()">ÖLÇÜLERİ KAYDET</button>
+      <div class="setting-card">
+        <div class="setting-title"><i class="fa-solid fa-robot"></i> JARVIS Modu</div>
+        <div class="seg">
+          <button class="seg-btn" onclick="setCoachTone('short')">KISA</button>
+          <button class="seg-btn" onclick="setCoachTone('normal')">NORMAL</button>
         </div>
-
-        <div id="measurement-history" class="history-list">
-            </div>
-    </main>
-
-    <main id="view-analytics" class="view fade-in" style="display: none;">
-        <h2 class="section-title">DETAYLI ANALİZ</h2>
-        
-        <div class="chart-mode-selector">
-            <button class="mode-btn active" onclick="setChartMode('workout')">🏋️ GÜÇ GRAFİĞİ</button>
-            <button class="mode-btn" onclick="setChartMode('body')">📏 VÜCUT GRAFİĞİ</button>
+        <div class="tiny muted" style="margin-top:8px;">
+          KISA = 6 maddeyi geçmez, uzatmaz. Patron.
         </div>
+      </div>
 
-        <select id="chart-select" onchange="updateChart()">
-            </select>
+      <div class="divider"></div>
 
-        <div class="chart-container">
-            <canvas id="mainChart"></canvas>
-        </div>
-        
-        <div id="stats-summary" class="stats-box"></div>
-    </main>
+      <button class="btn wide" onclick="exportData()"><i class="fa-solid fa-download"></i> YEDEK (JSON)</button>
+      <button class="btn wide ghost" onclick="exportCSV()"><i class="fa-solid fa-file-csv"></i> CSV</button>
 
-    <main id="view-ai" class="view fade-in" style="display: none;">
-        <div class="ai-interface">
-            <div class="arc-reactor">
-                <i class="fa-solid fa-brain"></i>
-            </div>
-            <h2 class="gold-text">JARVIS AI</h2>
-            <p>Haftalık Konsey & Strateji</p>
-            
-            <button class="save-btn ai-btn" onclick="askGeminiFullReport()">
-                <i class="fa-solid fa-microchip"></i> DETAYLI ANALİZ BAŞLAT
-            </button>
-            <div id="ai-report-area"></div>
-        </div>
-    </main>
+      <input type="file" id="import-file" style="display:none" onchange="importData(this)"/>
+      <button class="btn wide ghost" onclick="document.getElementById('import-file').click()"><i class="fa-solid fa-upload"></i> YEDEK YÜKLE</button>
 
-    <nav class="bottom-nav">
-        <button class="nav-btn active" onclick="switchView('tracker')"><i class="fa-solid fa-dumbbell icon"></i><span class="label">Takip</span></button>
-        <button class="nav-btn" onclick="switchView('program')"><i class="fa-solid fa-calendar-days icon"></i><span class="label">Plan</span></button>
-        <button class="nav-btn" onclick="switchView('body')"><i class="fa-solid fa-ruler-vertical icon"></i><span class="label">Vücut</span></button>
-        <button class="nav-btn" onclick="switchView('analytics')"><i class="fa-solid fa-chart-line icon"></i><span class="label">Analiz</span></button>
-        <button class="nav-btn" onclick="switchView('ai')"><i class="fa-solid fa-robot icon"></i><span class="label">AI</span></button>
-    </nav>
-
-    <div id="modal" class="modal">
-        <div class="modal-content scale-up">
-            <h2 id="modal-title">RAPOR</h2>
-            <div id="modal-body"></div>
-            <button class="close-btn" onclick="closeModal()">TAMAM</button>
-        </div>
+      <button class="btn wide danger" onclick="hardResetConfirm()"><i class="fa-solid fa-triangle-exclamation"></i> SIFIRLA</button>
     </div>
-    
-    <div id="mission-briefing" class="modal">
-        <div class="modal-content briefing-content scale-up">
-            <h2 class="gold-text">GÖREV EMRİ</h2>
-            <div id="briefing-text"></div>
-            <button class="save-btn" onclick="closeBriefing()">ANLAŞILDI</button>
+  </div>
+
+  <!-- SEARCH -->
+  <div id="search-modal" class="modal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div class="modal-title"><i class="fa-solid fa-magnifying-glass"></i> Ara</div>
+        <button class="icon-btn" onclick="closeSearch()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <input id="search-input" class="input" placeholder="Egzersiz / not / gün ara..." oninput="runSearch(this.value)">
+      <div id="search-results" class="search-results"></div>
+      <button class="btn wide ghost" onclick="closeSearch()">KAPAT</button>
+    </div>
+  </div>
+
+  <!-- VIEWS -->
+  <main id="view-home" class="view active">
+    <div class="wrap">
+      <div class="grid">
+
+        <!-- TODAY -->
+        <section class="card span-2">
+          <div class="card-head">
+            <div class="card-title"><i class="fa-solid fa-calendar-day"></i> Bugün</div>
+            <div class="pill" id="home-date">—</div>
+          </div>
+
+          <div class="today">
+            <div class="today-left">
+              <div class="today-day" id="home-day">—</div>
+              <div class="muted" id="home-plan">—</div>
+
+              <div class="row gap">
+                <button class="btn" onclick="switchView('tracker')"><i class="fa-solid fa-dumbbell"></i> Takibe Git</button>
+                <button class="btn ghost" onclick="openQuickLog()"><i class="fa-solid fa-plus"></i> Hızlı Kayıt</button>
+                <button class="btn ghost" onclick="jarvisHome('today_plan')"><i class="fa-solid fa-clipboard-list"></i> AI Plan</button>
+              </div>
+
+              <div class="mini-ai" id="home-jarvis-mini">
+                <div class="muted tiny">Patron, “AI Plan” veya “Gelişimi Açıkla” bas.</div>
+              </div>
+            </div>
+
+            <div class="today-right">
+              <div class="metric">
+                <div class="k">SET</div>
+                <div class="v" id="home-sets">0</div>
+              </div>
+              <div class="metric">
+                <div class="k">TONAJ</div>
+                <div class="v" id="home-tonnage">0</div>
+              </div>
+              <div class="metric">
+                <div class="k">STREAK</div>
+                <div class="v" id="home-streak">0</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PROGRESS ENGINE -->
+        <section class="card">
+          <div class="card-head">
+            <div class="card-title"><i class="fa-solid fa-gauge-high"></i> Gelişim Motoru</div>
+            <button class="chip" onclick="jarvisHome('explain_progress')">AI Açıkla</button>
+          </div>
+
+          <div class="engine">
+            <div class="engine-box">
+              <div class="engine-k">GÜÇ</div>
+              <div class="engine-v" id="eng-strength">—</div>
+              <div class="engine-s" id="eng-strength-sub">—</div>
+            </div>
+            <div class="engine-box">
+              <div class="engine-k">KAS</div>
+              <div class="engine-v" id="eng-muscle">—</div>
+              <div class="engine-s" id="eng-muscle-sub">—</div>
+            </div>
+            <div class="engine-box">
+              <div class="engine-k">TOPARLANMA</div>
+              <div class="engine-v" id="eng-recovery">—</div>
+              <div class="engine-s" id="eng-recovery-sub">—</div>
+            </div>
+          </div>
+
+          <div class="tiny muted" style="margin-top:10px;">
+            Güç = 1RM trend • Kas = hacim trend • Toparlanma = yük+RPE riski
+          </div>
+        </section>
+
+        <!-- VOLUME SPARK -->
+        <section class="card">
+          <div class="card-head">
+            <div class="card-title"><i class="fa-solid fa-chart-line"></i> 14 Gün Tonaj</div>
+            <button class="chip" onclick="switchView('analytics')">Detay</button>
+          </div>
+          <div class="chart-sm">
+            <canvas id="spark-tonnage"></canvas>
+          </div>
+        </section>
+
+        <!-- BODY HEATMAP -->
+        <section class="card span-2">
+          <div class="card-head">
+            <div class="card-title"><i class="fa-solid fa-fire"></i> Vücut Isı Haritası</div>
+            <div class="seg small">
+              <button class="seg-btn small" onclick="setBodyHeatWindow(7)">7G</button>
+              <button class="seg-btn small" onclick="setBodyHeatWindow(30)">30G</button>
+            </div>
+          </div>
+
+          <div class="heat-layout">
+            <div id="body-heatmap" class="body-heat"></div>
+            <div class="heat-legend">
+              <div class="legend-row"><span class="dot l1"></span> Düşük</div>
+              <div class="legend-row"><span class="dot l3"></span> Orta</div>
+              <div class="legend-row"><span class="dot l5"></span> Yüksek</div>
+              <div class="divider"></div>
+              <button class="btn ghost wide" onclick="switchView('body')"><i class="fa-solid fa-ruler"></i> Ölçü + Detay</button>
+              <button class="btn ghost wide" onclick="jarvisHome('heatmap_advice')"><i class="fa-solid fa-robot"></i> AI Denge Öner</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- PR -->
+        <section class="card span-2">
+          <div class="card-head">
+            <div class="card-title"><i class="fa-solid fa-crown"></i> PR Panosu</div>
+            <button class="chip" onclick="showAllPRs()">Tümü</button>
+          </div>
+          <div id="home-pr-list" class="pr-grid"></div>
+        </section>
+
+        <!-- CONSISTENCY -->
+        <section class="card span-2">
+          <div class="card-head">
+            <div class="card-title"><i class="fa-solid fa-grip"></i> Devamlılık (30 gün)</div>
+            <button class="chip" onclick="jarvisHome('consistency_tips')">AI Taktik</button>
+          </div>
+          <div id="heatmap" class="heatmap"></div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- TRACKER -->
+  <main id="view-tracker" class="view">
+    <div id="day-selector" class="day-strip"></div>
+
+    <div class="wrap">
+      <section class="card">
+        <div class="card-head">
+          <div class="card-title"><i class="fa-solid fa-bolt"></i> Bugün Özet</div>
+          <button class="chip" onclick="showTodayDetails()">Detay</button>
         </div>
+
+        <div class="summary">
+          <div class="sum">
+            <div class="k">SET</div>
+            <div class="v" id="sum-sets">0</div>
+          </div>
+          <div class="sum">
+            <div class="k">TONAJ</div>
+            <div class="v" id="sum-tonnage">0</div>
+          </div>
+          <div class="sum">
+            <div class="k">SÜRE</div>
+            <div class="v" id="sum-time">0 dk</div>
+          </div>
+          <div class="sum">
+            <div class="k">GİDİŞAT</div>
+            <div class="v" id="sum-trend">—</div>
+          </div>
+        </div>
+
+        <div class="row gap" style="margin-top:12px;">
+          <button class="btn ghost" onclick="jarvisTracker('today_feedback')"><i class="fa-solid fa-robot"></i> AI: Bugün Nasıl?</button>
+          <button class="btn ghost" onclick="jarvisTracker('fix_program_today')"><i class="fa-solid fa-wrench"></i> AI: Bugün Optimize</button>
+        </div>
+
+        <div class="row gap" style="margin-top:12px;">
+          <button class="btn" id="btn-active" onclick="setDayStatus('active')">💪 ANTRENMAN</button>
+          <button class="btn danger" id="btn-sick" onclick="setDayStatus('sick')">🤒 OFF/HASTA</button>
+        </div>
+      </section>
     </div>
 
-    <script src="app.js"></script>
+    <div id="workout-container"></div>
+  </main>
+
+  <!-- PROGRAM -->
+  <main id="view-program" class="view">
+    <div class="wrap">
+      <section class="card">
+        <div class="card-head">
+          <div class="card-title"><i class="fa-solid fa-calendar-days"></i> Haftalık Plan</div>
+          <button class="chip" onclick="jarvisProgram('balance_check')">AI Denge Kontrol</button>
+        </div>
+        <div id="program-calendar" class="program-cal"></div>
+      </section>
+
+      <section class="card" style="margin-top:14px;">
+        <div class="card-head">
+          <div class="card-title"><i class="fa-solid fa-bullseye"></i> Kas Dağılımı</div>
+          <button class="chip" onclick="showProgramStats()">İstatistik</button>
+        </div>
+        <div class="program-split">
+          <div class="chart-md"><canvas id="program-radar"></canvas></div>
+          <div id="program-list" class="program-list"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- ANALYTICS -->
+  <main id="view-analytics" class="view">
+    <div class="wrap">
+      <section class="card">
+        <div class="card-head">
+          <div class="card-title"><i class="fa-solid fa-chart-simple"></i> Analiz</div>
+          <button class="chip" onclick="jarvisAnalytics('full_read')">AI Özet</button>
+        </div>
+
+        <div class="filters">
+          <select id="ana-window" onchange="renderAdvancedAnalytics()">
+            <option value="14">Son 14 gün</option>
+            <option value="30" selected>Son 30 gün</option>
+            <option value="90">Son 90 gün</option>
+            <option value="365">Son 1 yıl</option>
+            <option value="all">Tüm zaman</option>
+          </select>
+
+          <select id="ana-metric" onchange="renderAdvancedAnalytics()">
+            <option value="tonnage" selected>Tonaj</option>
+            <option value="sets">Set</option>
+            <option value="sessions">Seans</option>
+            <option value="avg1rm">Ortalama 1RM</option>
+          </select>
+
+          <button class="chip" onclick="showAnalyticsHelp()">?</button>
+        </div>
+
+        <div class="chart-lg"><canvas id="ana-main"></canvas></div>
+
+        <div class="grid2" style="margin-top:14px;">
+          <div class="card inner">
+            <div class="card-head">
+              <div class="card-title"><i class="fa-solid fa-crosshairs"></i> Denge</div>
+              <button class="chip" onclick="jarvisAnalytics('balance')">AI</button>
+            </div>
+            <div class="chart-md"><canvas id="ana-radar"></canvas></div>
+          </div>
+
+          <div class="card inner">
+            <div class="card-head">
+              <div class="card-title"><i class="fa-solid fa-fire"></i> Heatmap</div>
+              <button class="chip" onclick="jarvisAnalytics('consistency')">AI</button>
+            </div>
+            <div id="ana-heatmap" class="heatmap"></div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <!-- BODY -->
+  <main id="view-body" class="view">
+    <div class="wrap">
+      <section class="card">
+        <div class="card-head">
+          <div class="card-title"><i class="fa-solid fa-ruler-combined"></i> Ölçü Gir</div>
+          <button class="chip" onclick="jarvisBody('body_tips')">AI Öneri</button>
+        </div>
+
+        <div class="measure-grid">
+          <div class="ig"><label>Omuz</label><input class="input" type="number" id="m_shoulder" placeholder="0"></div>
+          <div class="ig"><label>Göğüs</label><input class="input" type="number" id="m_chest" placeholder="0"></div>
+          <div class="ig"><label>Sol Kol</label><input class="input" type="number" id="m_l_arm" placeholder="0"></div>
+          <div class="ig"><label>Sağ Kol</label><input class="input" type="number" id="m_r_arm" placeholder="0"></div>
+          <div class="ig"><label>Bel</label><input class="input" type="number" id="m_waist" placeholder="0"></div>
+          <div class="ig"><label>Bacak</label><input class="input" type="number" id="m_thigh" placeholder="0"></div>
+          <div class="ig"><label>Kalf</label><input class="input" type="number" id="m_calf" placeholder="0"></div>
+          <div class="ig"><label>Kilo</label><input class="input" type="number" id="m_weight" placeholder="0"></div>
+        </div>
+
+        <button class="btn wide" onclick="saveMeasurements()">KAYDET</button>
+      </section>
+
+      <section class="card" style="margin-top:14px;">
+        <div class="card-head">
+          <div class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Geçmiş</div>
+        </div>
+        <div id="measurement-history" class="history"></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- AI -->
+  <main id="view-ai" class="view">
+    <div class="wrap">
+      <section class="card">
+        <div class="card-head">
+          <div class="card-title"><i class="fa-solid fa-robot"></i> JARVIS Koç</div>
+          <div class="seg small">
+            <button class="seg-btn small" onclick="setAIWindow('weekly')">HAFTA</button>
+            <button class="seg-btn small" onclick="setAIWindow('monthly')">AY</button>
+          </div>
+        </div>
+
+        <div class="ai-grid">
+          <div class="card inner">
+            <div class="card-head">
+              <div class="card-title"><i class="fa-solid fa-chart-line"></i> Rapor Paneli</div>
+              <button class="chip" onclick="generateAIReport(false)">Rapor Üret</button>
+            </div>
+            <div class="chart-md"><canvas id="ai-trend"></canvas></div>
+            <div id="ai-stats" class="ai-stats"></div>
+
+            <div class="row gap" style="margin-top:10px;">
+              <button class="btn ghost" onclick="generateAIReport(true)"><i class="fa-solid fa-rotate"></i> Yenile</button>
+              <button class="btn ghost" onclick="aiMakeTodayPlan()"><i class="fa-solid fa-clipboard-list"></i> Bugün Plan</button>
+            </div>
+
+            <div id="ai-report-area" class="ai-report"></div>
+          </div>
+
+          <div class="card inner">
+            <div class="card-head">
+              <div class="card-title"><i class="fa-solid fa-comments"></i> Sohbet</div>
+              <div class="row gap">
+                <button class="chip" onclick="aiClearChat()">Temizle</button>
+                <button class="chip" onclick="aiExportChat()">Dışa</button>
+              </div>
+            </div>
+
+            <div id="ai-chat" class="ai-chat"></div>
+
+            <div class="row gap" style="margin-top:10px;">
+              <input id="ai-input" class="input" placeholder="Patron, sorunu yaz..." onkeydown="if(event.key==='Enter'){sendAIChat();}">
+              <button class="btn" onclick="sendAIChat()"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+
+            <div class="row gap" style="margin-top:10px; flex-wrap:wrap;">
+              <button class="chip" onclick="aiQuick('Bugün güç mü hacim mi odak? Kısa söyle.')">Odak</button>
+              <button class="chip" onclick="aiQuick('Progresyon kuralımı düzelt (kısa).')">Progresyon</button>
+              <button class="chip" onclick="aiQuick('Deload gerekir mi? 3 madde.')">Deload</button>
+              <button class="chip" onclick="aiQuick('Beslenme: hedef kas. kısa öner.')">Beslenme</button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- QUICK LOG -->
+  <div id="quicklog" class="modal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div class="modal-title"><i class="fa-solid fa-plus"></i> Hızlı Kayıt</div>
+        <button class="icon-btn" onclick="closeQuickLog()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="grid2">
+        <input id="q-name" class="input" placeholder="Hareket adı">
+        <select id="q-group" class="input">
+          <option value="Göğüs">Göğüs</option>
+          <option value="Sırt">Sırt</option>
+          <option value="Bacak">Bacak</option>
+          <option value="Omuz">Omuz</option>
+          <option value="Kol">Kol</option>
+          <option value="Core">Core</option>
+        </select>
+        <input id="q-kg" class="input" type="number" placeholder="KG">
+        <input id="q-reps" class="input" type="number" placeholder="Tekrar">
+        <input id="q-sets" class="input" type="number" placeholder="Set" value="3">
+        <select id="q-type" class="input">
+          <option value="compound">Compound</option>
+          <option value="isolation">Isolation</option>
+        </select>
+      </div>
+
+      <button class="btn wide" onclick="saveQuickLog()">KAYDET</button>
+      <button class="btn wide ghost" onclick="closeQuickLog()">KAPAT</button>
+    </div>
+  </div>
+
+  <!-- GENERIC MODAL -->
+  <div id="modal" class="modal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div class="modal-title" id="modal-title"><i class="fa-solid fa-circle-info"></i> Bilgi</div>
+        <button class="icon-btn" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="modal-body" class="modal-body"></div>
+      <button class="btn wide ghost" onclick="closeModal()">TAMAM</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- NAV -->
+  <nav class="bottom">
+    <button class="nav-btn active" onclick="switchView('home')"><i class="fa-solid fa-house"></i><span>Home</span></button>
+    <button class="nav-btn" onclick="switchView('tracker')"><i class="fa-solid fa-dumbbell"></i><span>Takip</span></button>
+    <button class="nav-btn" onclick="switchView('program')"><i class="fa-solid fa-calendar-days"></i><span>Plan</span></button>
+    <button class="nav-btn" onclick="switchView('analytics')"><i class="fa-solid fa-chart-line"></i><span>Analiz</span></button>
+    <button class="nav-btn" onclick="switchView('body')"><i class="fa-solid fa-ruler"></i><span>Vücut</span></button>
+    <button class="nav-btn" onclick="switchView('ai')"><i class="fa-solid fa-robot"></i><span>Koç</span></button>
+  </nav>
+
+  <script src="app.js"></script>
 </body>
-    </html>
-    
+</html>
