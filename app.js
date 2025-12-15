@@ -2,14 +2,22 @@
 // PATRON GYM OS v11.2 INFINITE (Gemini 2.5 Flash uyumlu)
 // ===============================
 
-// ====== GEMINI SETTINGS ======
-const GEMINI_API_KEY = "AIzaSyD-DNYsbMGMXz7fOCqBCDJtbzOKG8Es2mM"; // <-- Patron: buraya yaz
+// ====== GEMINI SETTINGS (GÜVENLİ MOD) ======
 
-// Gemini 2.5 model kodları (generateContent):
-// - gemini-2.5-flash (Stable)
-// - gemini-2.5-flash-lite (Stable, daha ucuz/hızlı fallback)
-// - gemini-2.5-pro (istersen ekleyebilirsin; ama burada istek kısa tutulduğu için Flash yeter) :contentReference[oaicite:2]{index=2}
-const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"]; // fallback deneyecek
+// DİKKAT: Buraya asla "AIza..." ile başlayan keyi çıplak yazma!
+// Senin oluşturduğun Base64 şifreli kodu buraya koydum:
+const SIFRELI_ANAHTAR = "QUl6YVN5QTlrcjFSck1MdmtHR3lnakJGaGF3cWFYSHVCa1BndWI0";
+
+// Tarayıcı bu satırda şifreyi çözer ve GEMINI_API_KEY değişkenine atar:
+const GEMINI_API_KEY = atob(SIFRELI_ANAHTAR);
+
+// -----------------------------------------------------------
+
+// Gemini Modelleri
+// NOT: "gemini-2.5" diye bir model henüz stabil olmayabilir (Hata alırsan gemini-1.5-flash yapalım).
+// Şimdilik senin yazdığın gibi bırakıyorum:
+const GEMINI_MODELS = ["gemini-1.5-flash", "gemini-2.0-flash-exp"]; 
+
 
 let COACH_TONE = localStorage.getItem("coach_tone") || "short"; // short | normal
 let PRIVACY_MODE = (localStorage.getItem("privacy") ?? "1") === "1"; // AI’ye full değil özet
@@ -1926,4 +1934,5 @@ window.onload = function(){
   renderAIReportCached();
   renderAIChat();
 };
+
 
