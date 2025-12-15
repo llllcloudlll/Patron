@@ -2,23 +2,33 @@
 // PATRON GYM OS v11.2 INFINITE (Gemini 2.5 Flash uyumlu)
 // ===============================
 
-// ====== GEMINI AYARLARI (GÜVENLİ MOD) ======
+// ====== GEMINI AYARLARI (GÜVENLİ VE LOGLU MOD) ======
 
-// 1. Senin şifreli anahtarın (Base64)
+// 1. Şifreli kodun (Base64)
 const SIFRELI_ANAHTAR = "QUl6YVN5QTlrcjFSck1MdmtHR3lnakJGaGF3cWFYSHVCa1BndWI0";
 
-// 2. Şifreyi çözüyoruz (Hata buradaydı, şimdi değişkene atıyoruz)
-const COZULMUS_API_KEY = atob(SIFRELI_ANAHTAR);
+// 2. Şifreyi çözüyoruz
+// DİKKAT: Değişken adını senin eski kodunla uyumlu olsun diye "GEMINI_API_KEY" yaptım.
+const GEMINI_API_KEY = atob(SIFRELI_ANAHTAR);
 
-// KONTROL (İsteğe bağlı): F12 konsolunda anahtar görünüyor mu diye bakabilirsin
-// console.log("Anahtar Durumu:", COZULMUS_API_KEY ? "Dolu" : "Boş");
+// 3. KONTROL NOKTASI (Bunu eklemezsek kör dövüşü yaparız)
+console.log("1. Şifreli Hali:", SIFRELI_ANAHTAR);
+console.log("2. Çözülmüş Hali (İlk 5 harf):", GEMINI_API_KEY.substring(0, 5));
 
-// 3. Gemini Motorunu Başlatıyoruz (En kritik yer burası!)
-// Eğer bu satırı yazmazsan "API Key not found" hatası alırsın.
-const genAI = new GoogleGenerativeAI(COZULMUS_API_KEY);
+// 4. Gemini Motorunu Başlatma
+// Hata burada geliyorsa, kütüphane yüklenmemiş demektir.
+let genAI;
+try {
+    genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    console.log("3. Gemini Motoru Başarıyla Kuruldu.");
+} catch (error) {
+    console.error("3. HATA: GoogleGenerativeAI başlatılamadı!", error);
+}
 
-// 4. Modeller (Patron, 2.5 diye bir model yok, 1.5 en iyisidir)
+// 5. Model Seçimi (2.5 diye model yok, 1.5 kullanıyoruz)
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+// ====================================================
 
 // ============================================
 
@@ -1939,6 +1949,7 @@ window.onload = function(){
   renderAIReportCached();
   renderAIChat();
 };
+
 
 
 
