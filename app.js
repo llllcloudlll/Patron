@@ -2,21 +2,26 @@
 // PATRON GYM OS v11.2 INFINITE (Gemini 2.5 Flash uyumlu)
 // ===============================
 
-// ====== GEMINI SETTINGS (GÜVENLİ MOD) ======
+// ====== GEMINI AYARLARI (GÜVENLİ MOD) ======
 
-// DİKKAT: Buraya asla "AIza..." ile başlayan keyi çıplak yazma!
-// Senin oluşturduğun Base64 şifreli kodu buraya koydum:
+// 1. Senin şifreli anahtarın (Base64)
 const SIFRELI_ANAHTAR = "QUl6YVN5QTlrcjFSck1MdmtHR3lnakJGaGF3cWFYSHVCa1BndWI0";
 
-// Tarayıcı bu satırda şifreyi çözer ve GEMINI_API_KEY değişkenine atar:
-const GEMINI_API_KEY = atob(SIFRELI_ANAHTAR);
+// 2. Şifreyi çözüyoruz (Hata buradaydı, şimdi değişkene atıyoruz)
+const COZULMUS_API_KEY = atob(SIFRELI_ANAHTAR);
 
-// -----------------------------------------------------------
+// KONTROL (İsteğe bağlı): F12 konsolunda anahtar görünüyor mu diye bakabilirsin
+// console.log("Anahtar Durumu:", COZULMUS_API_KEY ? "Dolu" : "Boş");
 
-// Gemini Modelleri
-// NOT: "gemini-2.5" diye bir model henüz stabil olmayabilir (Hata alırsan gemini-1.5-flash yapalım).
-// Şimdilik senin yazdığın gibi bırakıyorum:
-const GEMINI_MODELS = ["gemini-1.5-flash", "gemini-2.0-flash-exp"]; 
+// 3. Gemini Motorunu Başlatıyoruz (En kritik yer burası!)
+// Eğer bu satırı yazmazsan "API Key not found" hatası alırsın.
+const genAI = new GoogleGenerativeAI(COZULMUS_API_KEY);
+
+// 4. Modeller (Patron, 2.5 diye bir model yok, 1.5 en iyisidir)
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+// ============================================
+
 
 
 let COACH_TONE = localStorage.getItem("coach_tone") || "short"; // short | normal
@@ -1934,5 +1939,6 @@ window.onload = function(){
   renderAIReportCached();
   renderAIChat();
 };
+
 
 
