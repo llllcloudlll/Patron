@@ -5,33 +5,29 @@
 import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
 // --- GÜVENLİK VE KURULUM BLOĞU ---
+// --- GÜVENLİK VE BAŞLATMA ---
 
-// 1. Şifreli Anahtar (Senin Base64 kodun)
+// 1. Şifreli Anahtar (GitHub Görmesin Diye)
 const SIFRELI_ANAHTAR = "QUl6YVN5QTlrcjFSck1MdmtHR3lnakJGaGF3cWFYSHVCa1BndWI0";
 
 // 2. Anahtarı Çöz
 const API_KEY = atob(SIFRELI_ANAHTAR);
 
-// 3. Modeli Başlat (Hata korumalı)
+// 3. Modeli Başlat
+// Not: "window.GoogleGenerativeAI" diyoruz çünkü HTML'den yükledik.
 let model;
 try {
-    const genAI = new GoogleGenerativeAI(API_KEY);
-    // Patron, 2.5 diye model yok, 1.5 en iyisi:
+    const genAI = new window.GoogleGenerativeAI(API_KEY);
     model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    console.log("Gemini Hazır Patron.");
+    console.log("Gemini Motoru Devrede Patron.");
 } catch (error) {
-    console.error("Gemini Başlatılamadı:", error);
+    console.error("Gemini Yüklenemedi. İnternet bağlantını kontrol et.", error);
 }
 
-// --- KURULUM BİTTİ ---
+// --- AYARLAR BİTTİ, SENİN KODLARIN DEVAM ETSİN ---
 
-
-// --- SENİN KODLARIN BURADAN DEVAM ETSİN ---
-// Aşağıdaki fonksiyonların içinde artık 'model' değişkenini direkt kullanabilirsin.
-// ÖRNEK:
-// async function antrenmanYaz() {
-//    const sonuc = await model.generateContent("Soru buraya");
-// }
+// Buradan aşağısı senin eski fonksiyonların...
+// model.generateContent(...) diyerek kullanabilirsin.
 
 
 let COACH_TONE = localStorage.getItem("coach_tone") || "short"; // short | normal
@@ -1949,6 +1945,7 @@ window.onload = function(){
   renderAIReportCached();
   renderAIChat();
 };
+
 
 
 
