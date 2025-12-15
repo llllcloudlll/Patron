@@ -2,36 +2,36 @@
 // PATRON GYM OS v11.2 INFINITE (Gemini 2.5 Flash uyumlu)
 // ===============================
 
-// ====== GEMINI AYARLARI (GÜVENLİ VE LOGLU MOD) ======
+import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
-// 1. Şifreli kodun (Base64)
+// --- GÜVENLİK VE KURULUM BLOĞU ---
+
+// 1. Şifreli Anahtar (Senin Base64 kodun)
 const SIFRELI_ANAHTAR = "QUl6YVN5QTlrcjFSck1MdmtHR3lnakJGaGF3cWFYSHVCa1BndWI0";
 
-// 2. Şifreyi çözüyoruz
-// DİKKAT: Değişken adını senin eski kodunla uyumlu olsun diye "GEMINI_API_KEY" yaptım.
-const GEMINI_API_KEY = atob(SIFRELI_ANAHTAR);
+// 2. Anahtarı Çöz
+const API_KEY = atob(SIFRELI_ANAHTAR);
 
-// 3. KONTROL NOKTASI (Bunu eklemezsek kör dövüşü yaparız)
-console.log("1. Şifreli Hali:", SIFRELI_ANAHTAR);
-console.log("2. Çözülmüş Hali (İlk 5 harf):", GEMINI_API_KEY.substring(0, 5));
-
-// 4. Gemini Motorunu Başlatma
-// Hata burada geliyorsa, kütüphane yüklenmemiş demektir.
-let genAI;
+// 3. Modeli Başlat (Hata korumalı)
+let model;
 try {
-    genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    console.log("3. Gemini Motoru Başarıyla Kuruldu.");
+    const genAI = new GoogleGenerativeAI(API_KEY);
+    // Patron, 2.5 diye model yok, 1.5 en iyisi:
+    model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    console.log("Gemini Hazır Patron.");
 } catch (error) {
-    console.error("3. HATA: GoogleGenerativeAI başlatılamadı!", error);
+    console.error("Gemini Başlatılamadı:", error);
 }
 
-// 5. Model Seçimi (2.5 diye model yok, 1.5 kullanıyoruz)
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+// --- KURULUM BİTTİ ---
 
-// ====================================================
 
-// ============================================
-
+// --- SENİN KODLARIN BURADAN DEVAM ETSİN ---
+// Aşağıdaki fonksiyonların içinde artık 'model' değişkenini direkt kullanabilirsin.
+// ÖRNEK:
+// async function antrenmanYaz() {
+//    const sonuc = await model.generateContent("Soru buraya");
+// }
 
 
 let COACH_TONE = localStorage.getItem("coach_tone") || "short"; // short | normal
@@ -1949,6 +1949,7 @@ window.onload = function(){
   renderAIReportCached();
   renderAIChat();
 };
+
 
 
 
