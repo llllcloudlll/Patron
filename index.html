@@ -497,8 +497,23 @@
     <button class="nav-btn" onclick="switchView('ai')"><i class="fa-solid fa-robot"></i><span>Koç</span></button>
   </nav>
 
-  <script type="module" src="script.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "@google/generative-ai": "https://esm.run/@google/generative-ai"
+    }
+  }
+</script>
+<script type="module">
+  import { GoogleGenerativeAI } from "@google/generative-ai";
+  // Kütüphaneyi pencereye (Window) sabitle, böylece her yerden erişilsin:
+  window.GoogleGenerativeAI = GoogleGenerativeAI;
+</script>
+
+<script src="script.js"></script> 
+  
   
 </body>
 </html>
+
 
