@@ -1,30 +1,24 @@
 // ===============================
-// PATRON GYM OS v11.2 INFINITE (Gemini 2.5 Flash uyumlu)
+// ===============================
+// PATRON GYM OS v11.2 INFINITE (Gemini REST uyumlu)
 // ===============================
 
-import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
-
-// --- GÜVENLİK VE KURULUM BLOĞU ---
-// --- GÜVENLİK VE BAŞLATMA ---
-
-// 1. Şifreli Anahtar (GitHub Görmesin Diye)
+// NOT: Frontend’de API key %100 gizlenemez. Sadece "obfuscation" yapar.
+// Yine de senin sistem bozulmasın diye aynı mantığı korudum.
 const SIFRELI_ANAHTAR = "QUl6YVN5QTlrcjFSck1MdmtHR3lnakJGaGF3cWFYSHVCa1BndWI0";
+const GEMINI_API_KEY = atob(SIFRELI_ANAHTAR);
 
-// 2. Anahtarı Çöz
-const API_KEY = atob(SIFRELI_ANAHTAR);
+// Sende geminiText() zaten "GEMINI_MODELS" üzerinden dönüyor.
+// O yüzden burada tanımlıyoruz (mevcut fonksiyonlarını bozmadan).
+// En stabil text modeller (v1beta generateContent)
+const GEMINI_MODELS = [
+  "gemini-2.0-flash",
+  "gemini-2.0-flash-lite"
+];
 
-// 3. Modeli Başlat
-// Not: "window.GoogleGenerativeAI" diyoruz çünkü HTML'den yükledik.
-let model;
-try {
-    const genAI = new window.GoogleGenerativeAI(API_KEY);
-    model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    console.log("Gemini Motoru Devrede Patron.");
-} catch (error) {
-    console.error("Gemini Yüklenemedi. İnternet bağlantını kontrol et.", error);
-}
 
 // --- AYARLAR BİTTİ, SENİN KODLARIN DEVAM ETSİN ---
+
 
 // Buradan aşağısı senin eski fonksiyonların...
 // model.generateContent(...) diyerek kullanabilirsin.
@@ -1945,9 +1939,3 @@ window.onload = function(){
   renderAIReportCached();
   renderAIChat();
 };
-
-
-
-
-
-
